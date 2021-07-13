@@ -4,30 +4,8 @@ import random
 import math
 import pandas as pd
 import requests
-# function
-def SetTimeString( Year, Month ):
-    return str( Year ) + str( Month ).zfill( 2 ) + '01'
-def AccumulateMonth( Year, Month, YearCnt, MonthCnt ):
-        # print( "Month = ", Month )
-    BreakFlag = 0
-    if Year == EndYear:
-        # print( "State = 1" )
-        if Month == EndMonth:
-            # print( "State = 2" )
-            BreakFlag = 1
-        else:
-            # print( "State = 3" )
-            MonthCnt += 1
-    else:
-        # print( "State = 4" )
-        if Month == 12:
-            # print( "State = 5" )
-            MonthCnt -= 11
-            YearCnt += 1
-        else:
-            # print( "State = 6" )
-            MonthCnt += 1
-    return [ YearCnt, MonthCnt, BreakFlag ]
+import Function_def as Func
+
 # 建立一個class儲存當天的資訊
 class PriceInDay:
     # 建構子包含日期、收盤價
@@ -56,11 +34,11 @@ TaxRate = 0.003
 # -------------------------------------------------------------------------------
 
 # 檔案名稱
-FileName = TargetStockNo +'_'+ SetTimeString( StartYear, StartMonth ) + 'To' + SetTimeString( EndYear, EndMonth )
+FileName = TargetStockNo +'_'+ Func.SetTimeString( StartYear, StartMonth ) + 'To' + Func.SetTimeString( EndYear, EndMonth )
 
 stop = 1
 YearCnt = MonthCnt = 0
-DelayTimeArray = [ 0.1, 0.2, 0.5, 0.01, 0.8 ]
+DelayTimeArray = [ 5, 6, 7, 4, 8 ]
 
 # 初始化參數
 HoldAmount = 0
@@ -74,9 +52,9 @@ while( 1 ):
     Year = StartYear + YearCnt
     Month = StartMonth + MonthCnt
     # 累加一個月份
-    [ YearCnt, MonthCnt, IsReachEnd ] = AccumulateMonth( Year, Month, YearCnt, MonthCnt )
+    [ YearCnt, MonthCnt, IsReachEnd ] = Func.AccumulateMonth( Year, Month, YearCnt, MonthCnt, EndYear, EndMonth )
     # 將日期轉為字串格式
-    TargetDate = SetTimeString( Year, Month )
+    TargetDate = Func.SetTimeString( Year, Month )
     
     # 從網頁上讀資料
     # 設定路徑
