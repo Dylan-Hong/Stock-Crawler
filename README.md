@@ -1,4 +1,4 @@
-# Stock-Crawler
+# Stock-Crawler(帥喔）
 
 <!-- 定期定額損益計算功能 -->
 
