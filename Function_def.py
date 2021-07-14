@@ -1,29 +1,24 @@
 # function
-import pandas as pd
 def SetTimeString( Year, Month ):
     return str( Year ) + str( Month ).zfill( 2 ) + '01'
-
-def IsBuyMonth( Year, Month, StartYear, StartMonth, Freq ):
-    # 月份差異 / 頻率為0則買進
-    if ( ( Year - StartYear ) * 12 + ( Month - StartMonth ) ) % Freq == 0:
-        return True
-    else:
-        return False
-
-def AccumulateOneMonth( Year, Month, YearCnt, MonthCnt, EndYear, EndMonth ):
+def AccumulateMonth( Year, Month, YearCnt, MonthCnt, EndYear, EndMonth ):
+        # print( "Month = ", Month )
     BreakFlag = 0
     if Year == EndYear:
+        # print( "State = 1" )
         if Month == EndMonth:
+            # print( "State = 2" )
             BreakFlag = 1
         else:
+            # print( "State = 3" )
             MonthCnt += 1
     else:
+        # print( "State = 4" )
         if Month == 12:
+            # print( "State = 5" )
             MonthCnt -= 11
             YearCnt += 1
         else:
+            # print( "State = 6" )
             MonthCnt += 1
     return [ YearCnt, MonthCnt, BreakFlag ]
-
-def PrintToXlsx_MultiSheet( writer, Dataframe, SheetName ):
-    Dataframe.to_excel( writer, sheet_name = SheetName, index=False )
