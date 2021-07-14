@@ -68,6 +68,7 @@ while( 1 ):
     BuyFlag = Func.IsBuyMonth( Year, Month, StartYear, StartMonth, InvestFreq )
     # 將日期轉為字串格式
     TargetDate = Func.SetTimeString( Year, Month )
+    print(TargetDate)
     
     # 從網頁上讀資料
     # 設定路徑
@@ -97,7 +98,7 @@ while( 1 ):
         # 未實現損益比例，未實現損益 / 投入資金
         PLRatio = PLAmount / HoldAmount
         df_log.loc[ Index_log ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ 0 ], '{:.2f}'.format( ClosePrice ), BuyQuantity, BuyAmount,\
-            HoldQuantity, HoldCost, HoldAmount, '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
+            HoldQuantity, '{:.2f}'.format( HoldCost ), HoldAmount, '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
 
     # ----最大損益計算----
     for i in range( 0, len( data.index ) ):
