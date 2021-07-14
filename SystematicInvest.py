@@ -31,10 +31,12 @@ TargetStockNo = '0050'
 # 投資頻率與金額設定
 InvestFreq = 2
 InvestAmount = 10000
+FeeRate = 0.001425
+TaxRate = 0.003
 # -------------------------------------------------------------------------------
 
 # 檔案名稱
-FileName = TargetStockNo +'_'+ func.SetTimeString( StartYear, StartMonth ) + 'To' + func.SetTimeString( EndYear, EndMonth )
+FileName = TargetStockNo +'_'+ Func.SetTimeString( StartYear, StartMonth ) + 'To' + Func.SetTimeString( EndYear, EndMonth )
 
 # 初始化參數
 YearCnt = MonthCnt = 0
