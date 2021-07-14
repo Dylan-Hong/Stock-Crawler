@@ -30,9 +30,9 @@ def GetStrTargetdate(Year, Month, day):
 
 
 def GetSearchDate(date):
-    date = date.strftime('%Y%m%d')
-    searchdate = str(int(str(date)[0:4])-1911) + \
-        '/'+str(date)[4:6]+'/'+str(date)[6:8]
+    newdate = date.strftime('%Y%m%d')
+    searchdate = str(int(str(newdate)[0:4])-1911) + \
+        '/'+str(newdate)[4:6]+'/'+str(newdate)[6:8]
     return searchdate
 
 # 這個日期轉換，主要將文字日期轉換為Date，輸入參數為str，輸出為date
@@ -45,14 +45,66 @@ def GetDateTargetdate(Strdate):
     return transdate
 
 
-# def GetBuyDate(date, freq, series):
-#     newdate = (date + datetime.timedelta(days=freq)).strftime('%Y%m%d')
-#     searchdate = str(int(str(newdate)[0:4])-1911) + \
-#         '/'+str(newdate)[4, 6]+'/'+str(newdate)[6, 8]
-#     count = 0
-#     while count < 1:
-#         if searchdate in list(series):
-#             # 未完
+def GetBuyDateInfo(date, freq, SDseries, TRdataframe):
+    # 要把外部變數拉進來用，要用global
+    global CalStartIndex
+    global x1
+    global x2
+    global x3
+    global x4
+    global x5
+    global x6
+    newdate = (date + datetime.timedelta(days=freq))
+    count = 0
+    while count < 1:
+        if GetSearchDate(newdate) in list(SDseries):
+            index = list(SDseries).index(GetSearchDate(newdate))
+            TRdataframe = pd.concat(
+                [TRdataframe, SD.iloc[[index]]], ignore_index=True)
+            benchmark = CalStartIndex
+            for i in range(benchmark, index-1, 1):
+                CalStartIndex = CalStartIndex + 1
+                print('-----------')
+                print(CalStartIndex)
+                print(len(SD.index))
+                # 持股總現值
+                x3 = int(x1*SD.iat[CalStartIndex, 6])
+                # 損益金額
+                x4 = x3-x2
+                # 損益比例
+                x5 = x4/x2
+                # 存進CA中
+                CA.loc[len(CA.index)] = [
+                    SD.iat[CalStartIndex, 0], x1, x6, x2, x3, x4, x5, SD.iat[CalStartIndex, 6]]
+
+            # 將交易日資料也寫進CA
+            CalStartIndex = CalStartIndex + 1
+
+            # 持股總股數，ox1代表交易前股數
+            ox1 = x1
+            x1 = x1+int(Payment//(SD.iat[index, 6]+((SD.iat[index, 6])*c1*c2)))
+            # 持股總成本
+            x2 = x2+int(((x1-ox1)*SD.iat[index, 6]) +
+                        ((x1-ox1)*SD.iat[index, 6]*c1*c2))
+            # 持股總現值
+            x3 = int(x1*SD.iat[index, 6])
+            # 損益金額
+            x4 = x3-x2
+            # 損益比例
+            x5 = x4/x2
+            # 持股平均成本單價
+            x6 = x2/x1
+            # 存進CA中
+            CA.loc[len(CA.index)] = [
+                SD.iat[CalStartIndex, 0], x1, x6, x2, x3, x4, x5, SD.iat[CalStartIndex, 6]]
+            count = 1
+        else:
+            # 若輸入的日期沒找到，則日期再加一日來重跑迴圈
+            newdate = newdate + datetime.timedelta(days=1)
+            if newdate > datetime.date(YearNow, MonthNow, DayNow):
+                count = 1
+    return newdate, TRdataframe
+
 
     # 設定輸入選項
 TargetStock = input("請輸入投資項目股票代號，範例：2330。")
@@ -75,6 +127,9 @@ YearNow = TimeNow.tm_year
 # 在讀取月份時，會有1~9月前面沒有0情況，因此利用zfill功能讓前面補0
 MonthNow = TimeNow.tm_mon
 DayNow = TimeNow.tm_mday
+# 稅費相關參數
+c1 = 0.001425
+c2 = 0.28
 
 # debug
 # print(InitialYear)
@@ -145,17 +200,84 @@ for year in range(InitialYear, YearNow + 1, 1):
 # 撰寫執行交易，並將交易日相關資訊存到dataframe中。
 # TR代表Transaction Record
 TR = pd.DataFrame()
+# CA代表Calculation，先用一個caldata建立起CA dataframe架構，但因為如果只有column沒有值，我不會把後續檔案併入，因此index 0 的值先個賦予1。
+caldata = {'日期': [1], '持股單位': [1], '均價': [1], '總成本': [
+    1], '總現值': [1], '損益金額': [1], '損益比例': [1], '當天股價': [1]}
+CA = pd.DataFrame(caldata)
+# CalStartIndex代表計算資料的第一筆，是在SD的第幾個index
+CalStartIndex = 0
+# 將交易資料變數宣告在迴圈外，這樣可以一直被更改迭代
+x1 = 0
+x2 = 0
+x3 = 0
+x4 = 0
+x5 = 0
+x6 = 0
+x7 = 0
 
-fisrtdate = GetDateTargetdate(str(InitialTime))
+firstdate = GetDateTargetdate(str(InitialTime))
 breakpoint1 = 0
 while breakpoint1 < 1:
-    if GetSearchDate(fisrtdate) in list(SD['日期']):
-        index = list(SD['日期']).index(GetSearchDate(fisrtdate))
+    if GetSearchDate(firstdate) in list(SD['日期']):
+        index = list(SD['日期']).index(GetSearchDate(firstdate))
+        CalStartIndex = index
         TR = pd.concat([TR, SD.iloc[[index]]], ignore_index=True)
+        # 持股單位
+        x1 = int(Payment//(SD.iat[index, 6]+((SD.iat[index, 6])*c1*c2)))
+        # 持股總成本
+        x2 = int((x1*SD.iat[index, 6]) + (x1*SD.iat[index, 6]*c1*c2))
+        # 持股總現值
+        x3 = int(x1*SD.iat[index, 6])
+        # 損益金額
+        x4 = x3-x2
+        # 損益比例
+        x5 = x4/x2
+        # 持股平均成本單價
+        x6 = x2/x1
+        # 當天股價
+        x7 = SD.iat[index, 6]
+
+        # 修改儲存計算數據的Dataframe
+        CA.iat[0, 0] = GetSearchDate(firstdate)
+        CA.iat[0, 1] = x1
+        CA.iat[0, 2] = x6
+        CA.iat[0, 3] = x2
+        CA.iat[0, 4] = x3
+        CA.iat[0, 5] = x4
+        CA.iat[0, 6] = x5
+        CA.iat[0, 7] = x7
+
+        # print(len(CA.index))
+        # print(CA)
+        # CA.loc[1] = [GetSearchDate(firstdate), x1, x6, x2, x3, x4, x5]
+        # print(len(CA.index))
+
+        # print(CA)
+        # print(x1)
+        # print(x2)
+        # print(x3)
+        # print(x4)
+        # print(x5)
+        # print(x6)
         breakpoint1 = 1
     else:
         # 若輸入的日期沒找到，則日期再加一日來重跑迴圈
-        fisrtdate = fisrtdate + datetime.timedelta(days=2)
+        firstdate = firstdate + datetime.timedelta(days=1)
+        if firstdate > datetime.date(YearNow, MonthNow, DayNow):
+            breakpoint = 1
+
+print(CalStartIndex)
+print(x1)
+print(x2)
 
 # 此時得到儲存第一筆資料的TR
-# print(TR)
+# 接下來完成後續所有交易，並儲存至TR dataframe
+while firstdate <= datetime.date(YearNow, MonthNow, DayNow):
+    firstdate, TR = GetBuyDateInfo(firstdate, Freq, SD['日期'], TR)
+
+# CA交易紀錄，只會補足到最後一天交易日，這邊把他補足到有資料的最後一天
+# 待寫
+
+print(SD)
+print(TR)
+print(CA)
