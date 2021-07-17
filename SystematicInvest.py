@@ -22,14 +22,14 @@ import Function_def as Func
 # input
 # -------------------------------------------------------------------------------
 # 設定日期
-StartYear = 2019
+StartYear = 2020
 StartMonth = 1
 EndYear = 2020
-EndMonth = 12
+EndMonth = 4
 # 設定標的
 TargetStockNo = '0050'
 # 投資頻率與金額設定
-InvestFreq = 2
+InvestFreq = 1
 InvestAmount = 10000
 FeeRate = 0.001425
 TaxRate = 0.003
