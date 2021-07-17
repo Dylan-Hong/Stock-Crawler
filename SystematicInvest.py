@@ -59,18 +59,19 @@ MaxLossRatio = 0
 oFrame = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進股數', '買進金額', '持股數量', '持股成本', '持股金額', '損益金額', '損益比例' ] )
 oFrameIndex = 0
 
-# 計算流程：讀每個月第一個交易日收盤價 -> 計算可買入股數 -> 設定平均成本 -> 設定資金大小 -> 設定目前損益
+# 分為三塊 : (1)設定日期並判斷是否為買進月份，或是是否已經結束 (2)若為買進月更新資訊 (3)計算最大損益
 while( 1 ):
     # 設定這次回圈要執行的日期
     Year = StartYear + YearCnt
     Month = StartMonth + MonthCnt
-    # 累加一個月份
+    # 累加一個月份，並且檢查是否已經到達目標日期，若未到達目標日期，則更新年月的counter
     [ YearCnt, MonthCnt, IsReachEnd ] = Func.AccumulateOneMonth( Year, Month, YearCnt, MonthCnt, EndYear, EndMonth )
     # 檢查是否為買進月份
     BuyFlag = Func.IsBuyMonth( Year, Month, StartYear, StartMonth, InvestFreq )
     # 將日期轉為字串格式
     TargetDate = Func.SetTimeString( Year, Month )
-    print(TargetDate)
+    # 輸出當下計算日期至終端機，確認沒當機
+    print( TargetDate )
     
     # 從網頁上讀資料
     # 設定路徑
@@ -78,9 +79,9 @@ while( 1 ):
     # read_html是一個dataframe的list，目前這個資料撈回來都在第0個index，所以要用[0]，才會存成一個dataframe
     data = pd.read_html( requests.get( url ).text )[ 0 ]
     
-    # 若該月要買進，才更新持股資訊
+    # 持股資訊更新，若該月要買進，才會進行更新
     if BuyFlag == 1:
-        # ----交易計算----
+        # 買進資訊計算
         # 買進價格
         ClosePrice = data[ data.columns[ 0 ][ 0 ],  '收盤價' ][ 0 ]
         # 計算買進股數
@@ -99,10 +100,12 @@ while( 1 ):
         PLAmount = ClosePrice * HoldQuantity * ( 1 - FeeRate - TaxRate ) - HoldAmount
         # 未實現損益比例，未實現損益 / 投入資金
         PLRatio = PLAmount / HoldAmount
+
+        # 輸出資料：[ 買進日期、買進價格、買進股數、買進金額、持股數量、持股均價、持有金額、損益金額、損益比例 ]
         df_log.loc[ Index_log ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ 0 ], '{:.2f}'.format( ClosePrice ), BuyQuantity, BuyAmount,\
             HoldQuantity, '{:.2f}'.format( HoldCost ), HoldAmount, '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
 
-    # ----最大損益計算----
+    # 最大損益計算
     for i in range( 0, len( data.index ) ):
         # 讀取每日收盤價
         price = data[ data.columns[ 0 ][ 0 ], '收盤價' ][ i ]
@@ -114,11 +117,8 @@ while( 1 ):
             df_MaxLoss.loc[ 0 ] = [ '最大金額', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
         if PLRatio < MaxLossRatio:
             df_MaxLoss.loc[ 1 ] = [ '最大比例', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
-        # 判斷有沒有超過最大損益，if簡寫方法[ False, True ][ 條件 ]
         MaxLoss = min( MaxLoss, PLAmount )
         MaxLossRatio = min( MaxLossRatio, PLRatio )
-
-    # 輸出資料：[ 買進日期、買進價格、買進股數、買進金額、持股數量、持股均價、持有金額、損益金額、損益比例 ]
 
     # 檢查是否已經計算到end date
     if IsReachEnd:
@@ -128,14 +128,14 @@ while( 1 ):
     else:
         time.sleep( random.choice( DelayTimeArray ) )
     Index_log += 1
-    # # 存入PriceInDay的物件陣列中
-    # Price0701 = PriceInDay( data.iat[ 0, 0 ], data.iat[ 0, 6 ] )
 
 # 建立writer，設定檔案路徑
 writer = pd.ExcelWriter( './' + FileName + '.xlsx', engine='openpyxl' )
-Func.PrintToXlsx_MultiSheet( writer, df_ProfitAndLoss, '最終損益' )
-Func.PrintToXlsx_MultiSheet( writer, df_log, '交易紀錄' )
-Func.PrintToXlsx_MultiSheet( writer, df_MaxLoss, '最大損益' )
+# 依序寫入三個dataframe到同一個
+df_ProfitAndLoss.to_excel( writer, sheet_name = '最終損益', index = False )
+df_log.to_excel( writer, sheet_name = '交易紀錄', index = False )
+df_MaxLoss.to_excel( writer, sheet_name = '最大虧損', index = False )
+
 writer.save()
 
 

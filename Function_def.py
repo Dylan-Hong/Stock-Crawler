@@ -24,6 +24,3 @@ def AccumulateOneMonth( Year, Month, YearCnt, MonthCnt, EndYear, EndMonth ):
         else:
             MonthCnt += 1
     return [ YearCnt, MonthCnt, BreakFlag ]
-
-def PrintToXlsx_MultiSheet( writer, Dataframe, SheetName ):
-    Dataframe.to_excel( writer, sheet_name = SheetName, index=False )
