@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import math
 
 def calculate():
@@ -59,7 +60,9 @@ btn.grid( row = 2, column = 4 )
 result_label = tk.Label(window)
 result_label.grid( row = 3, column = 3, columnspan = 1, sticky = 'we' )
 
-combo = tk.Combo
+array = [ 1, 2, 3, 4 ]
+comGrade = ttk.Combobox( window, width=50, values=array )
+comGrade.grid( row = 4, column = 3 )
 
 window.mainloop()
 
