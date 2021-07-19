@@ -35,16 +35,19 @@ def get_bmi_status_description(bmi_value):
 # columnspan：定義這個部件跨幾欄，如columnspan=2
 # padx､pady：定義部件與cell邊框的橫縱向的距離，如padx=10
 # ipadx､ipady：定義部件與部件間橫縱向的距離，如ipadx=5
+# label
 label1 = tk.Label( window, text = "帳號", font = ('Arial', 12 ), bg = 'yellow', fg = 'black' )
 label1.grid( row = 0, column = 0 )
 label2 = tk.Label( window, text = "密碼", font = ( '', 12 ), bg = 'gray', fg = 'blue' )
 label2.grid( row = 1, column = 0 )
 
+# entry
 height_entry = tk.Entry( window )
 height_entry.grid( row = 0, column = 1 )
 weight_entry = tk.Entry( window )
 weight_entry.grid( row = 1, column = 1 )
 
+# button
 button1 = tk.Button( window, text = '登    入', bg = 'blue',activebackground = 'RED', font = 8, bd = 4, command = calculate_bmi_number )
 button1.grid( row = 2, column = 0, columnspan = 2, sticky = 'we' )
 button2 = tk.Button( window, text = '加入會員', bg = 'blue',activebackground = 'RED', font = 8, bd = 4 )
@@ -60,9 +63,15 @@ btn.grid( row = 2, column = 4 )
 result_label = tk.Label(window)
 result_label.grid( row = 3, column = 3, columnspan = 1, sticky = 'we' )
 
+# http://andrewpythonarduino.blogspot.com/2018/04/python_6.html
+# ComboBox
 array = [ 1, 2, 3, 4 ]
 comGrade = ttk.Combobox( window, width=50, values=array )
 comGrade.grid( row = 4, column = 3 )
+# Radiobutton 
+# Checkbutton
+# Listbox 
+
 
 window.mainloop()
 
