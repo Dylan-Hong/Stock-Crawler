@@ -3,31 +3,66 @@ from tkinter import ttk
 import math
 import Function_def as Func
 class MainWindow( tk.Tk ):
-    TabGroupList = []
     def __init__(self, title, size) -> None:
         # 這個可以實作父類別的建構子，要寫這個才能用
         super().__init__()
+        # 設定這個window的名稱跟尺寸
         self.title( title )
         self.geometry( size )
 
-    def CreateTabGroup( self ):
-        self.TabGroupList.append( ttk.Notebook( self ) )
-        tab1 = tk.Frame( self.TabGroupList[ 0 ], bg = 'white' )
-        self.TabGroupList[ 0 ].add( tab1, text='tab1' )
-        self.TabGroupList[ 0 ].place( x = 10, y = 100, width = 400, height = 225 )
-        tab2 = tk.Frame( self.TabGroupList[ 0 ], bg = 'white' )
-        self.TabGroupList[ 0 ].add( tab2, text='tab2' )
-        # self.TabGroupList[ 0 ].place( x = 60, y = 100, width = 400, height = 225 )
-        subnotebook = ttk.Notebook( tab1 )
-        subtab1 = tk.Frame( subnotebook, bg = 'blue' )
-        subnotebook.add( subtab1, text = 'stab1' )
-        subtab2 = tk.Frame( subnotebook, bg = 'yellow' )
-        subnotebook.add( subtab2, text = 'stab2' )
-        subnotebook.place( x = 10, y = 10, width = 100, height = 100 )
-    
+    def CreateMainNBGroup( self ):
+        # 建立主選單的notebook
+        self.ＭainNBGroup = ttk.Notebook( self )
+        self.ＭainNBGroup.place( x = 0, y = 0, width = 800, height = 450 )
+        
+        # 建立tab
+        # 基本參數tab
+        self.Tab_Parameter = MainTab( self, '基本參數' )
+        self.Tab_Parameter.SetParameter()
+
+        # 定期定額tab
+        self.Tab_SysInvest = MainTab( self, '定期定額' )
+        self.Tab_SysInvest.SetSysInvest( self )
+
+        # 建立新功能的tab
+        self.Tab_Unknow = MainTab( self, '新功能' )
+        self.Tab_Unknow.SetUnknown()
+
+
+class MainTab( tk.Frame ):
+    def __init__( self, MainWindow, TabName ):
+        super().__init__( MainWindow.MainNBGroup )
+        self.TabName = TabName
+        MainWindow.ＭainNBGroup.add( self, text = self.TabName )
+
+    def SetParameter( self ):
+        label = tk.Label( self, text = '這邊放基本參數設定，例如稅率、手續費' )
+        label.place( x = 10, y = 10, width = 300, height = 20 )
+        pass
+
+    def SetSysInvest( self, MainWindow ):
+        self.SubNBGroup = ttk.Notebook( self )
+        self.SubNBGroup.place( x = 0, y = 0, width = 720, height = 405 )
+        self.SubTab_InputParam = SubTab( self, '參數設定' )
+        self.SubTab_Result = SubTab( self, '試算結果' )
+        self.SubTab_Picture = SubTab( self, '圖表輸出' )
+
+        pass
+
+    def SetUnknown( self ):
+        label = tk.Label( self, text = '新功能放在這邊' )
+        label.place( x = 10, y = 10, width = 100, height = 20 )
+        pass
+
+
+class SubTab( tk.Frame ):
+    def __init__( self, MainTab, TabName ):
+        super().__init__( MainTab.SubNBGroup )
+        self.TabName = TabName
+        MainTab.SubNBGroup.add( self, text = self.TabName )
 
 window = MainWindow( 'Stock Crawler', '800x450' )
-window.CreateTabGroup()
+window.CreateMainNBGroup()
 
 window.mainloop()
 
