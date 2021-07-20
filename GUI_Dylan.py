@@ -1,19 +1,140 @@
 import tkinter as tk
 from tkinter import ttk
 import math
+import Function_def as Func
+class MainWindow( tk.Tk ):
+    TabGroupList = []
+    def __init__(self, title, size) -> None:
+        # 這個可以實作父類別的建構子，要寫這個才能用
+        super().__init__()
+        self.title( title )
+        self.geometry( size )
+
+    def CreateTabGroup( self ):
+        self.TabGroupList.append( ttk.Notebook( self ) )
+        tab1 = tk.Frame( self.TabGroupList[ 0 ], bg = 'white' )
+        self.TabGroupList[ 0 ].add( tab1, text='tab1' )
+        self.TabGroupList[ 0 ].place( x = 10, y = 100, width = 400, height = 225 )
+        tab2 = tk.Frame( self.TabGroupList[ 0 ], bg = 'white' )
+        self.TabGroupList[ 0 ].add( tab2, text='tab2' )
+        # self.TabGroupList[ 0 ].place( x = 60, y = 100, width = 400, height = 225 )
+        subnotebook = ttk.Notebook( tab1 )
+        subtab1 = tk.Frame( subnotebook, bg = 'blue' )
+        subnotebook.add( subtab1, text = 'stab1' )
+        subtab2 = tk.Frame( subnotebook, bg = 'yellow' )
+        subnotebook.add( subtab2, text = 'stab2' )
+        subnotebook.place( x = 10, y = 10, width = 100, height = 100 )
+    
+
+window = MainWindow( 'Stock Crawler', '800x450' )
+window.CreateTabGroup()
+
+window.mainloop()
+
+# """
+# Notebook分頁功能
+# window底下建立Notebook
+# 在Notebook底下建立建立frame
+# 在用notebook.add
+#  """
+
+# window =tk.Tk()  # 創建窗口對象
+# window.title(string = 'ttk.Notebook')  #設置窗口標題
+# window.geometry('800x600')
+
+# Notebook1 = ttk.Notebook(window)  #創建Notebook
+# tab1 = tk.Frame(Notebook1, bg = 'white') 
+# Notebook1.add(tab1, text='第一個分頁')
+
+# tab2 = tk.Frame(Notebook1,bg='white')
+# Notebook1.add(tab2, text='第二個分頁')
+
+# label1 = tk.Label( tab2, text='test' )
+# label1.place( x = 0, y = 0, width = 100, height = 20 )
+
+# Notebook1.place( x = 10, y = 10, width = 500, height = 500 )
+
+# Notebook1.select(tab1) #選擇tab1
+
+# window.mainloop()     # 進入消息循環
+
 
 """ 
 這邊練習用place
  """
 # window = tk.Tk()
-# window.geometry('800x600')
-# window.configure(background='white')
- # http://andrewpythonarduino.blogspot.com/2018/04/python_6.html
-# ComboBox
+# window.geometry( '800x600' )
+# window.configure( background='white' )
+# window.title( 'place測試' )
 
-# Radiobutton 
-# Checkbutton
-# Listbox 
+# def updateAfterCombo():
+#     output1.set( int( comGrade.get() ) )
+#     print( type(comGrade.get()) )
+
+# # http://andrewpythonarduino.blogspot.com/2018/04/python_6.html
+# # label用法補充
+# # wraplength可以指定多少寬度之後要換行
+# # justify指定換行要對其左邊還是中間還是右邊(left, right, center)
+# # anchor指定要放到哪邊(w, e, n, s, c)
+# # 這邊的width都重複設定了，感覺可以place設定就好，不過跟著label也很方便，不過這兩個width單位不同
+# label1 = tk.Label(window, text = '要是打很長會出現到第二行:', wraplength = 100, justify='left', width=50)
+# label1.place(x=10, y=100, width=100, height=80)
+# label2 = tk.Label(window, text = '選擇數字:', anchor = 'e', justify='left', width=50)
+# label2.place(x=10, y=10, width=100, height=20)
+# output1 = tk.IntVar()
+# output1.set( 1 )
+# label3 = tk.Label( window, textvariable = output1, anchor = 'c', width=20 )
+# # label3.place( x=10, y = 60, height = 20 )
+# label3.place( x=10, y = 200, width = 100, height = 20 )
+
+
+# # ComboBox
+# stdGrade = ['1', '2', '3']
+
+# comGrade = ttk.Combobox(window, width=50, values=stdGrade)
+# comGrade.place(x=110, y=10, width=50, height=20 )
+# print( comGrade.get() )
+
+# button1 = tk.Button( window, text = '更新', anchor = 'c', command = updateAfterCombo )
+# button1.place( x = 10, y = 220, width = 100, height = 20 )
+
+# # Radiobutton
+# # 透過設定variable為相同的變數，就可以變成同一個群組
+# RadiobutLabel1 = tk.Label(window, text = '單選按鈕', justify=tk.RIGHT, width=50)
+# RadiobutLabel1.place(x=10, y=70, width=100, height=20)
+
+# RadioVar = tk.IntVar()
+# RadioVar.set(1)       # 預設值1
+# rad1 = tk.Radiobutton(window, variable=RadioVar, value=1,text='1')
+# rad1.place(x=110, y=70, width=60, height=20)
+# rad2 = tk.Radiobutton(window, variable=RadioVar, value=0,text='2')
+# rad2.place(x=190, y=70, width=60, height=20)
+
+# # Checkbutton
+# signin = tk.StringVar()
+# signin.set('abc')       # 預設值0=未報到
+# chkSignin = tk.Checkbutton(window, text='CheckButton', variable=signin, onvalue='aaa', offvalue='bbb')
+# chkSignin.place(x=300, y=100, width=100, height=20)
+# label3 = tk.Label( window, textvariable = signin, anchor = 'c', width=20 )
+# label3.place( x=400, y = 100, width = 100, height = 20 )
+
+# # Listbox
+# # 建立一個框框，利用listbox.insert可以輸入東西，第一個引數是要從第幾行開始新增的意思
+# def addInfo():
+#     result = '年級:' + comGrade.get()
+#     result += ';性別:' + ('1' if RadioVar.get() else '0')
+#     result += ';報到:' + ('是' if signin.get() else '否')
+#     lstStudent.insert( 0, result)
+   
+# btnAdd = tk.Button(window, text='加入', width=40, command=addInfo)
+# btnAdd.place(x=200, y=210, width=100, height=20)
+
+# btnDel = tk.Button(window, text='刪除', width=40, command=addInfo)
+# btnDel.place(x=300, y=210, width=100, height=20)
+
+# lstStudent = tk.Listbox(window, width=380)
+# lstStudent.place(x=200, y=230, width=380, height=180)
+# window.mainloop()
 
 
 """ 
