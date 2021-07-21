@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import math
 import Function_def as Func
+import SystematicInvest as S
+
 class MainWindow( tk.Tk ):
     def __init__(self, title, size) -> None:
         # 這個可以實作父類別的建構子，要寫這個才能用
@@ -9,11 +11,12 @@ class MainWindow( tk.Tk ):
         # 設定這個window的名稱跟尺寸
         self.title( title )
         self.geometry( size )
+        self.SetMainNBGroup()
 
-    def CreateMainNBGroup( self ):
+    def SetMainNBGroup( self ):
         # 建立主選單的notebook
-        self.ＭainNBGroup = ttk.Notebook( self )
-        self.ＭainNBGroup.place( x = 0, y = 0, width = 800, height = 450 )
+        self.MainNBGroup = ttk.Notebook( self )
+        self.MainNBGroup.place( x = 0, y = 0, width = 800, height = 450 )
         
         # 建立tab
         # 基本參數tab
@@ -36,7 +39,7 @@ class MainTab( tk.Frame ):
     def __init__( self, MainWindow, TabName ):
         super().__init__( MainWindow.MainNBGroup )
         self.TabName = TabName
-        MainWindow.ＭainNBGroup.add( self, text = self.TabName )
+        MainWindow.MainNBGroup.add( self, text = self.TabName )
 
     def SetParameter( self ):
         label = tk.Label( self, text = '這邊放基本參數設定，例如稅率、手續費' )
@@ -54,29 +57,28 @@ class MainTab( tk.Frame ):
         self.SubTab_Result.SetSysInvest_Result()
         self.SubTab_Picture = SubTab( self, '圖表輸出' )
         self.SubNBGroup.select( self.SubTab_InputParam )
-        pass
 
     def SetUnknown( self ):
         label = tk.Label( self, text = '新功能放在這邊' )
         label.place( x = 10, y = 10, width = 100, height = 20 )
-        pass
 
 
 class SubTab( tk.Frame ):
-    def __init__( self, MainTab, TabName ):
+    def __init__( self, MainTab : MainTab, TabName ):
         super().__init__( MainTab.SubNBGroup )
         self.TabName = TabName
         MainTab.SubNBGroup.add( self, text = self.TabName )
 
     def SetSysInvest_InputParam( self ):
         StartX = 0
-        StartY = 0
         width_5 = 80
         width_1 = 20
         height_1 = 20
         width_entry = 50
 
-        # 起始日期label
+        # 起始日期
+        StartY = 10
+        # 起始日期 label
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_StartDate = tk.Label( self, text = '起始日期 : ' )
         label_StartDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
@@ -84,6 +86,7 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_StartYear = tk.Entry( self )
         self.entry_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_StartYear.insert( 0, '2020' )
         # 起始日期 年label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_StartYear = tk.Label( self, text = '年' )
@@ -92,12 +95,13 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_StartMonth = tk.Entry( self )
         self.entry_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_StartMonth.insert( 0, '10' )
         # 起始日期 月label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_StartMonth = tk.Label( self, text = '月' )
         label_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
-        StartY = 20
+        StartY += 20
         # 結束日期label
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_EndDate = tk.Label( self, text = '結束日期 : ' )
@@ -119,14 +123,46 @@ class SubTab( tk.Frame ):
         label_EndMonth = tk.Label( self, text = '月' )
         label_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
+        # 股票號碼
+        StartY += 20
+        # 股票號碼label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_StockNum = tk.Label( self, text = '股票號碼 : ' )
+        label_StockNum.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 股票號碼entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_StockNum = tk.Entry( self )
+        self.entry_StockNum.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        # 投資金額
+        StartY += 20
+        # 投資金額label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_InvestAmount = tk.Label( self, text = '投資金額 : ' )
+        label_InvestAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 投資金額entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_InvestAmount = tk.Entry( self )
+        self.entry_InvestAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        
+        # 開始計算按鈕
+        StartX = width_1 * 2 + width_entry * 2
+        StartY += 25
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        button_StartCalc = tk.Button( self, text = '開始計算', command = self.Calc_InputParam )
+        button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        
     def SetSysInvest_Result( self ):
         label_PLAmount = tk.Label( self, text = '損益金額 : ' )
         label_PLAmount.place( x = 10, y = 10, width = 80, height = 20 )
 
+    
+    def Calc_InputParam( self ):
+        S.SystematicInvest( self )
+        # 這個可以隱藏
+        # self.label_InvestAmount.place_forget()
 
 window = MainWindow( 'Stock Crawler', '800x450' )
-window.CreateMainNBGroup()
-
 window.mainloop()
 
 
