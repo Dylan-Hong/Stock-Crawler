@@ -28,6 +28,9 @@ class MainWindow( tk.Tk ):
         self.Tab_Unknow = MainTab( self, '新功能' )
         self.Tab_Unknow.SetUnknown()
 
+        # 預設開啟就選擇在定期定額，方便測試
+        self.MainNBGroup.select( self.Tab_SysInvest )
+
 
 class MainTab( tk.Frame ):
     def __init__( self, MainWindow, TabName ):
@@ -38,15 +41,19 @@ class MainTab( tk.Frame ):
     def SetParameter( self ):
         label = tk.Label( self, text = '這邊放基本參數設定，例如稅率、手續費' )
         label.place( x = 10, y = 10, width = 300, height = 20 )
+        # label = tk.Label( self, text = '存檔路徑 : ' )
+        # label.place( x = 10, y = 10, width = 100, height = 20 )
         pass
 
     def SetSysInvest( self, MainWindow ):
         self.SubNBGroup = ttk.Notebook( self )
         self.SubNBGroup.place( x = 0, y = 0, width = 720, height = 405 )
         self.SubTab_InputParam = SubTab( self, '參數設定' )
+        self.SubTab_InputParam.SetSysInvest_InputParam()
         self.SubTab_Result = SubTab( self, '試算結果' )
+        self.SubTab_Result.SetSysInvest_Result()
         self.SubTab_Picture = SubTab( self, '圖表輸出' )
-
+        self.SubNBGroup.select( self.SubTab_InputParam )
         pass
 
     def SetUnknown( self ):
@@ -61,17 +68,86 @@ class SubTab( tk.Frame ):
         self.TabName = TabName
         MainTab.SubNBGroup.add( self, text = self.TabName )
 
+    def SetSysInvest_InputParam( self ):
+        StartX = 0
+        StartY = 0
+        width_5 = 80
+        width_1 = 20
+        height_1 = 20
+        width_entry = 50
+
+        # 起始日期label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_StartDate = tk.Label( self, text = '起始日期 : ' )
+        label_StartDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 年entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_StartYear = tk.Entry( self )
+        self.entry_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 年label
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
+        label_StartYear = tk.Label( self, text = '年' )
+        label_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 月entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_StartMonth = tk.Entry( self )
+        self.entry_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 月label
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
+        label_StartMonth = tk.Label( self, text = '月' )
+        label_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        StartY = 20
+        # 結束日期label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_EndDate = tk.Label( self, text = '結束日期 : ' )
+        label_EndDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 年entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_EndYear = tk.Entry( self )
+        self.entry_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 年label
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
+        label_EndYear = tk.Label( self, text = '年' )
+        label_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 月entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_EndMonth = tk.Entry( self )
+        self.entry_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 起始日期 月label
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
+        label_EndMonth = tk.Label( self, text = '月' )
+        label_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+    def SetSysInvest_Result( self ):
+        label_PLAmount = tk.Label( self, text = '損益金額 : ' )
+        label_PLAmount.place( x = 10, y = 10, width = 80, height = 20 )
+
+
 window = MainWindow( 'Stock Crawler', '800x450' )
 window.CreateMainNBGroup()
 
 window.mainloop()
 
-# """
-# Notebook分頁功能
-# window底下建立Notebook
-# 在Notebook底下建立建立frame
-# 在用notebook.add
-#  """
+
+
+
+
+
+
+
+
+# ------------------以下為練習留存-------------------
+
+
+
+
+"""
+Notebook分頁功能
+window底下建立Notebook
+在Notebook底下建立建立frame
+在用notebook.add
+ """
 
 # window =tk.Tk()  # 創建窗口對象
 # window.title(string = 'ttk.Notebook')  #設置窗口標題
