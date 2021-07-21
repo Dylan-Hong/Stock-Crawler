@@ -1,7 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-import math
-import Function_def as Func
 import SystematicInvest as S
 
 class MainWindow( tk.Tk ):
@@ -36,7 +34,7 @@ class MainWindow( tk.Tk ):
 
 
 class MainTab( tk.Frame ):
-    def __init__( self, MainWindow, TabName ):
+    def __init__( self, MainWindow : MainWindow, TabName ):
         super().__init__( MainWindow.MainNBGroup )
         self.TabName = TabName
         MainWindow.MainNBGroup.add( self, text = self.TabName )
@@ -57,6 +55,7 @@ class MainTab( tk.Frame ):
         self.SubTab_Result.SetSysInvest_Result()
         self.SubTab_Picture = SubTab( self, '圖表輸出' )
         self.SubNBGroup.select( self.SubTab_InputParam )
+        pass
 
     def SetUnknown( self ):
         label = tk.Label( self, text = '新功能放在這邊' )
@@ -144,7 +143,18 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_InvestAmount = tk.Entry( self )
         self.entry_InvestAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        
+
+        # 投資頻率
+        StartY += 20
+        # 投資金額label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_InvestFreq = tk.Label( self, text = '投資頻率 : ' )
+        label_InvestFreq.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 投資金額entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_InvestFreq = tk.Entry( self )
+        self.entry_InvestFreq.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
         # 開始計算按鈕
         StartX = width_1 * 2 + width_entry * 2
         StartY += 25
@@ -156,14 +166,10 @@ class SubTab( tk.Frame ):
         label_PLAmount = tk.Label( self, text = '損益金額 : ' )
         label_PLAmount.place( x = 10, y = 10, width = 80, height = 20 )
 
-    
     def Calc_InputParam( self ):
         S.SystematicInvest( self )
         # 這個可以隱藏
         # self.label_InvestAmount.place_forget()
-
-window = MainWindow( 'Stock Crawler', '800x450' )
-window.mainloop()
 
 
 

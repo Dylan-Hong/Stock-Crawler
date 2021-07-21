@@ -19,8 +19,9 @@ import Function_def as Func
 2.第二個sheet : 提供買進的交易紀錄以及買進後損益狀況
 3.第三個sheet : 過程中最大虧損金額與比例
  """
+
+# def SystematicInvest( tab ):
 def SystematicInvest( tab : GUI.SubTab ):
-    
     # input
     # -------------------------------------------------------------------------------
     # 設定日期
@@ -31,7 +32,7 @@ def SystematicInvest( tab : GUI.SubTab ):
     # 設定標的
     TargetStockNo = tab.entry_StockNum.get()
     # 投資頻率與金額設定
-    InvestFreq = 1
+    InvestFreq = int( tab.entry_InvestFreq.get() )
     InvestAmount = int( tab.entry_InvestAmount.get() )
     FeeRate = 0.001425
     TaxRate = 0.003
