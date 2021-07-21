@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tkinter as tk
 import math
 'https://blog.techbridge.cc/2019/09/21/how-to-use-python-tkinter-to-make-gui-app-tutorial/'
@@ -8,20 +9,24 @@ window.title('BMI App')
 window.geometry('800x600')
 window.configure(background='white')
 
+
 def calculate_bmi_number():
     height = float(height_entry.get())
     weight = float(weight_entry.get())
     bmi_value = round(weight / math.pow(height, 2), 2)
-    result = '你的 BMI 指數為：{} {}'.format(bmi_value, get_bmi_status_description(bmi_value))
+    result = '你的 BMI 指數為：{} {}'.format(
+        bmi_value, get_bmi_status_description(bmi_value))
     result_label.configure(text=result)
+
 
 def get_bmi_status_description(bmi_value):
     if bmi_value < 18.5:
         return '體重過輕囉，多吃點！'
     elif bmi_value >= 18.5 and bmi_value < 24:
         return '體重剛剛好，繼續保持！'
-    elif bmi_value >= 24 :
+    elif bmi_value >= 24:
         return '體重有點過重囉，少吃多運動！'
+
 
 header_label = tk.Label(window, text='BMI 計算器')
 header_label.pack()
