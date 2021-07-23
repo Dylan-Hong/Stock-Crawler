@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 import SystematicInvest as S
 
 class MainWindow( tk.Tk ):
@@ -40,11 +41,47 @@ class MainTab( tk.Frame ):
         MainWindow.MainNBGroup.add( self, text = self.TabName )
 
     def SetParameter( self ):
-        label = tk.Label( self, text = '這邊放基本參數設定，例如稅率、手續費' )
-        label.place( x = 10, y = 10, width = 300, height = 20 )
-        # label = tk.Label( self, text = '存檔路徑 : ' )
-        # label.place( x = 10, y = 10, width = 100, height = 20 )
-        pass
+        StartX = 0
+        width_5 = 80
+        height_1 = 20
+        width_entry = 50
+
+        # 存檔路徑
+        StartY = 0
+        # 存檔路徑label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_Path = tk.Label( self, text = '存檔路徑 : ' )
+        label_Path.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 存檔路徑entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, 200, Hei ]
+        self.entry_Path = tk.Entry( self )
+        self.entry_Path.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 存檔路徑button
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_5, Hei ]
+        self.Button_SetPath = tk.Button( self, text = '設定', command = self.LoadPath )
+        self.Button_SetPath.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        # 稅率
+        StartY += 20
+        # 稅率 label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_TaxRate = tk.Label( self, text = '稅率 : ' )
+        label_TaxRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 稅率 entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_TaxRate = tk.Entry( self )
+        self.entry_TaxRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        # 手續費
+        StartY += 20
+        # 手續費label
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_FeeRate = tk.Label( self, text = '手續費 : ' )
+        label_FeeRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 手續費entry
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
+        self.entry_FeeRate = tk.Entry( self )
+        self.entry_FeeRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
     def SetSysInvest( self, MainWindow ):
         self.SubNBGroup = ttk.Notebook( self )
@@ -55,11 +92,15 @@ class MainTab( tk.Frame ):
         self.SubTab_Result.SetSysInvest_Result()
         self.SubTab_Picture = SubTab( self, '圖表輸出' )
         self.SubNBGroup.select( self.SubTab_InputParam )
-        pass
 
     def SetUnknown( self ):
         label = tk.Label( self, text = '新功能放在這邊' )
         label.place( x = 10, y = 10, width = 100, height = 20 )
+    
+    def LoadPath( self ):
+        Path = filedialog.askdirectory()
+        self.entry_Path.insert( 0, Path )
+        pass
 
 
 class SubTab( tk.Frame ):
@@ -68,6 +109,7 @@ class SubTab( tk.Frame ):
         self.TabName = TabName
         MainTab.SubNBGroup.add( self, text = self.TabName )
 
+    # 以下為tab內容
     def SetSysInvest_InputParam( self ):
         StartX = 0
         width_5 = 80
@@ -166,13 +208,12 @@ class SubTab( tk.Frame ):
         label_PLAmount = tk.Label( self, text = '損益金額 : ' )
         label_PLAmount.place( x = 10, y = 10, width = 80, height = 20 )
 
+    # 以下為function
     def Calc_InputParam( self ):
         S.SystematicInvest( self )
+        print( 'test' )
         # 這個可以隱藏
         # self.label_InvestAmount.place_forget()
-
-
-
 
 
 
