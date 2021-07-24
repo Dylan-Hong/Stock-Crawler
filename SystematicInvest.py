@@ -34,12 +34,12 @@ def SystematicInvest( tab : GUI.SubTab ):
     # 投資頻率與金額設定
     InvestFreq = int( tab.entry_InvestFreq.get() )
     InvestAmount = int( tab.entry_InvestAmount.get() )
-    FeeRate = 0.001425
-    TaxRate = 0.003
+    FeeRate = tab.pMainWindow.Tab_Parameter.FeeRate
+    TaxRate = tab.pMainWindow.Tab_Parameter.TaxRate
     # -------------------------------------------------------------------------------
 
     # 檔案名稱
-    FileName = TargetStockNo +'_'+ Func.SetTimeString( StartYear, StartMonth ) + 'To' + Func.SetTimeString( EndYear, EndMonth )
+    tab.FileName = TargetStockNo +'_'+ Func.SetTimeString( StartYear, StartMonth ) + 'To' + Func.SetTimeString( EndYear, EndMonth )
 
     # 初始化參數
     YearCnt = MonthCnt = 0
@@ -48,12 +48,12 @@ def SystematicInvest( tab : GUI.SubTab ):
     HoldQuantity = 0
     HoldCost = 0
     BuyFlag = 0
-    df_log = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進數量(股)', '買進金額', \
-        '持股數量', '持股均價', '持股成本', '損益金額', '損益比例' ] )
+    # df_log = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進數量(股)', '買進金額', \
+    #     '持股數量', '持股均價', '持股成本', '損益金額', '損益比例' ] )
     Index_log = 0
-    df_ProfitAndLoss = pd.DataFrame( columns = [ '計算日期', '損益金額', '損益比例' ] )
+    # df_ProfitAndLoss = pd.DataFrame( columns = [ '計算日期', '損益金額', '損益比例' ] )
     Index_PL = 0
-    df_MaxLoss = pd.DataFrame( columns = [ '項目', '日期', '總投入資金', '虧損金額', '虧損比例' ] )
+    # df_MaxLoss = pd.DataFrame( columns = [ '項目', '日期', '總投入資金', '虧損金額', '虧損比例' ] )
     Index_MaxLoss = 0
     MaxLoss = 0
     MaxLossRatio = 0
@@ -105,7 +105,7 @@ def SystematicInvest( tab : GUI.SubTab ):
             PLRatio = PLAmount / HoldAmount
 
             # 輸出資料：[ 買進日期、買進價格、買進股數、買進金額、持股數量、持股均價、持有金額、損益金額、損益比例 ]
-            df_log.loc[ Index_log ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ 0 ], '{:.2f}'.format( ClosePrice ), BuyQuantity, BuyAmount,\
+            tab.df_log.loc[ Index_log ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ 0 ], '{:.2f}'.format( ClosePrice ), BuyQuantity, BuyAmount,\
                 HoldQuantity, '{:.2f}'.format( HoldCost ), HoldAmount, '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
 
         # 最大損益計算
@@ -117,27 +117,39 @@ def SystematicInvest( tab : GUI.SubTab ):
             PLRatio = PLAmount / HoldAmount
             if PLAmount < MaxLoss:
                 # 寫入最大損益的dataframe
-                df_MaxLoss.loc[ 0 ] = [ '最大金額', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
+                tab.df_MaxLoss.loc[ 0 ] = [ '最大金額', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
+                tab.MaxLossDate = '最大金額', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ]
+                tab.MaxLoss = '{:.0f}'.format( MaxLoss )
             if PLRatio < MaxLossRatio:
-                df_MaxLoss.loc[ 1 ] = [ '最大比例', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
+                tab.df_MaxLoss.loc[ 1 ] = [ '最大比例', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
+                tab.MaxLossRatioDate = data[ data.columns[ 0 ][ 0 ], '日期' ][ i ]
+                tab.MaxLossRatio = '{:.2%}'.format( MaxLossRatio )
             MaxLoss = min( MaxLoss, PLAmount )
             MaxLossRatio = min( MaxLossRatio, PLRatio )
 
         # 檢查是否已經計算到end date
         if IsReachEnd:
             # 計算最終損益
-            df_ProfitAndLoss.loc[ 0 ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ len( data.index ) - 1 ], '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
+            tab.df_ProfitAndLoss.loc[ 0 ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ len( data.index ) - 1 ], '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
+            tab.EndDate = data[ data.columns[ 0 ][ 0 ], '日期' ][ len( data.index ) - 1 ]
+            tab.PLAmount = '{:.0f}'.format( PLAmount )
+            tab.PLRatio = '{:.2%}'.format( PLRatio )
             break
         else:
             time.sleep( random.choice( DelayTimeArray ) )
         Index_log += 1
 
+def PrintResult( tab : GUI.SubTab ):
+    pass
+
+
+def SaveFile( tab : GUI.SubTab ):
     # 建立writer，設定檔案路徑
-    writer = pd.ExcelWriter( './' + FileName + '.xlsx', engine='openpyxl' )
+    writer = pd.ExcelWriter( tab.pMainWindow.Tab_Parameter.Path + '/' + tab.FileName + '.xlsx', engine='openpyxl' )
     # 依序寫入三個dataframe到同一個
-    df_ProfitAndLoss.to_excel( writer, sheet_name = '最終損益', index = False )
-    df_log.to_excel( writer, sheet_name = '交易紀錄', index = False )
-    df_MaxLoss.to_excel( writer, sheet_name = '最大虧損', index = False )
+    tab.df_ProfitAndLoss.to_excel( writer, sheet_name = '最終損益', index = False )
+    tab.df_log.to_excel( writer, sheet_name = '交易紀錄', index = False )
+    tab.df_MaxLoss.to_excel( writer, sheet_name = '最大虧損', index = False )
 
     writer.save()
 

@@ -1,3 +1,4 @@
+import pandas as pd
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -24,7 +25,7 @@ class MainWindow( tk.Tk ):
 
         # 定期定額tab
         self.Tab_SysInvest = MainTab( self, '定期定額' )
-        self.Tab_SysInvest.SetSysInvest( self )
+        self.Tab_SysInvest.SetSysInvest()
 
         # 建立新功能的tab
         self.Tab_Unknow = MainTab( self, '新功能' )
@@ -37,17 +38,18 @@ class MainWindow( tk.Tk ):
 class MainTab( tk.Frame ):
     def __init__( self, MainWindow : MainWindow, TabName ):
         super().__init__( MainWindow.MainNBGroup )
+        self.pMainWindow = MainWindow
         self.TabName = TabName
-        MainWindow.MainNBGroup.add( self, text = self.TabName )
+        self.pMainWindow.MainNBGroup.add( self, text = self.TabName )
 
     def SetParameter( self ):
         StartX = 0
         width_5 = 80
         height_1 = 20
-        width_entry = 50
+        width_entry = 100
 
         # 存檔路徑
-        StartY = 0
+        StartY = 10
         # 存檔路徑label
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_Path = tk.Label( self, text = '存檔路徑 : ' )
@@ -56,9 +58,10 @@ class MainTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, 200, Hei ]
         self.entry_Path = tk.Entry( self )
         self.entry_Path.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_Path.insert( 0, './' )
         # 存檔路徑button
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_5, Hei ]
-        self.Button_SetPath = tk.Button( self, text = '設定', command = self.LoadPath )
+        self.Button_SetPath = tk.Button( self, text = '設定', bg = 'gray', command = self.LoadPath )
         self.Button_SetPath.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
         # 稅率
@@ -71,6 +74,7 @@ class MainTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_TaxRate = tk.Entry( self )
         self.entry_TaxRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_TaxRate.insert( 0, 0.003 )
 
         # 手續費
         StartY += 20
@@ -82,30 +86,43 @@ class MainTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_FeeRate = tk.Entry( self )
         self.entry_FeeRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_FeeRate.insert( 0, 0.001425 )
 
-    def SetSysInvest( self, MainWindow ):
+        # 儲存參數button
+        # [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        button_SaveParam = tk.Button( self, text = '儲存參數', command = self.SaveParam )
+        button_SaveParam.place( x = 200, y = 100, width = width_5, height = height_1 )
+
+    def SetSysInvest( self ):
         self.SubNBGroup = ttk.Notebook( self )
-        self.SubNBGroup.place( x = 0, y = 0, width = 720, height = 405 )
-        self.SubTab_InputParam = SubTab( self, '參數設定' )
+        self.SubNBGroup.place( x = 0, y = 0, width = 750, height = 400 )
+        self.SubTab_InputParam = SubTab( self, self.pMainWindow, '參數設定' )
         self.SubTab_InputParam.SetSysInvest_InputParam()
-        self.SubTab_Result = SubTab( self, '試算結果' )
+        self.SubTab_Result = SubTab( self, self.pMainWindow, '試算結果' )
         self.SubTab_Result.SetSysInvest_Result()
-        self.SubTab_Picture = SubTab( self, '圖表輸出' )
+        self.SubTab_Picture = SubTab( self, self.pMainWindow, '圖表輸出' )
         self.SubNBGroup.select( self.SubTab_InputParam )
 
     def SetUnknown( self ):
         label = tk.Label( self, text = '新功能放在這邊' )
         label.place( x = 10, y = 10, width = 100, height = 20 )
-    
+
+    #   以下為function
     def LoadPath( self ):
         Path = filedialog.askdirectory()
         self.entry_Path.insert( 0, Path )
         pass
 
+    def SaveParam( self ):
+        self.Path = self.entry_Path.get()
+        self.TaxRate = float( self.entry_TaxRate.get() )
+        self.FeeRate = float( self.entry_FeeRate.get() )
+
 
 class SubTab( tk.Frame ):
-    def __init__( self, MainTab : MainTab, TabName ):
+    def __init__( self, MainTab : MainTab, pMainWindow : MainWindow, TabName ):
         super().__init__( MainTab.SubNBGroup )
+        self.pMainWindow = pMainWindow
         self.TabName = TabName
         MainTab.SubNBGroup.add( self, text = self.TabName )
 
@@ -147,19 +164,21 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_EndDate = tk.Label( self, text = '結束日期 : ' )
         label_EndDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 起始日期 年entry
+        # 結束日期 年entry
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_EndYear = tk.Entry( self )
         self.entry_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 起始日期 年label
+        self.entry_EndYear.insert( 0, '2020' )
+        # 結束日期 年label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_EndYear = tk.Label( self, text = '年' )
         label_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 起始日期 月entry
+        # 結束日期 月entry
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_EndMonth = tk.Entry( self )
         self.entry_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 起始日期 月label
+        self.entry_EndMonth.insert( 0, '12' )
+        # 結束日期 月label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_EndMonth = tk.Label( self, text = '月' )
         label_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
@@ -174,6 +193,7 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_StockNum = tk.Entry( self )
         self.entry_StockNum.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_StockNum.insert( 0, '2330' )
 
         # 投資金額
         StartY += 20
@@ -185,6 +205,7 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_InvestAmount = tk.Entry( self )
         self.entry_InvestAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_InvestAmount.insert( 0, '10000' )
 
         # 投資頻率
         StartY += 20
@@ -196,6 +217,7 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_InvestFreq = tk.Entry( self )
         self.entry_InvestFreq.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_InvestFreq.insert( 0, '1' )
 
         # 開始計算按鈕
         StartX = width_1 * 2 + width_entry * 2
@@ -205,15 +227,94 @@ class SubTab( tk.Frame ):
         button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
         
     def SetSysInvest_Result( self ):
+        StartX = 0
+        width_5 = 80
+        width_7 = 110
+        height_1 = 20
+        StartY = 10
+
+        # 結算日期
+        # 標題
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_SettleDate = tk.Label( self, text = '結算日期 : ' )
+        label_SettleDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 結果
+        self.EndDate = tk.StringVar()
+        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
+        label_oEndDate = tk.Label( self, textvariable = self.EndDate )
+        label_oEndDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        StartY += height_1
+        # 損益金額
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_PLAmount = tk.Label( self, text = '損益金額 : ' )
-        label_PLAmount.place( x = 10, y = 10, width = 80, height = 20 )
+        label_PLAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.PLAmount = tk.IntVar()
+        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
+        label_oPLAmount = tk.Label( self, textvariable = self.PLAmount )
+        label_oPLAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        StartY += height_1
+        # 損益比例
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_PLRatio = tk.Label( self, text = '損益比例 : ' )
+        label_PLRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.PLRatio = tk.DoubleVar()
+        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
+        label_oPLRatio = tk.Label( self, textvariable = self.PLRatio )
+        label_oPLRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        # 最高虧損比例
+        StartY += height_1
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_7, height_1 ]
+        label_MaxLossRatio = tk.Label( self, text = '最高虧損比例 : ', anchor = 'w' )
+        label_MaxLossRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 日期
+        self.MaxLossRatioDate = tk.StringVar()
+        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_7, height_1 ]
+        label_oMaxLossRatioDate = tk.Label( self, textvariable = self.MaxLossRatioDate )
+        label_oMaxLossRatioDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 比例
+        self.MaxLossRatio = tk.DoubleVar()
+        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid * 2, StartY, width_5, height_1 ]
+        label_oMaxLossRatio = tk.Label( self, textvariable = self.MaxLossRatio )
+        label_oMaxLossRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
+ 
+        # 最高損益金額
+        # 日期
+        # 比例
+
+        # 輸出交易紀錄
 
     # 以下為function
     def Calc_InputParam( self ):
+        # 初始化模組需要資料
+        self.df_log = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進數量(股)', '買進金額', \
+        '持股數量', '持股均價', '持股成本', '損益金額', '損益比例' ] )
+        self.df_ProfitAndLoss = pd.DataFrame( columns = [ '計算日期', '損益金額', '損益比例' ] )
+        self.df_MaxLoss = pd.DataFrame( columns = [ '項目', '日期', '總投入資金', '虧損金額', '虧損比例' ] )
+        self.FileName = ''
+        self.EndDate = ''
+        self.MaxLossDate = ''
+        self.MaxLoss = 0
+        self.MaxLossRatioDate = ''
+        self.MaxLossRatio = 0
+
         S.SystematicInvest( self )
-        print( 'test' )
+        self.Calc_PrintResult()
         # 這個可以隱藏
         # self.label_InvestAmount.place_forget()
+
+    def Calc_PrintResult( self ):
+        result = self.pMainWindow.Tab_SysInvest.SubTab_Result
+        result.EndDate.set( self.EndDate )
+        result.PLAmount.set( self.PLAmount )
+        result.PLRatio.set( self.PLRatio )
+        result.MaxLossRatioDate.set( self.MaxLossRatioDate )
+        # result.MaxLossRatioDate.set( '22222' )
+        result.MaxLossRatio.set( self.MaxLossRatio )
+        # result.MaxLossDate.set( self.MaxLossDate )
+        # result.MaxLoss.set( self.MaxLoss )
 
 
 
