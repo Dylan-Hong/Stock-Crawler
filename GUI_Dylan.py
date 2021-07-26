@@ -1,3 +1,4 @@
+from tkinter.constants import END
 import pandas as pd
 import tkinter as tk
 from tkinter import ttk
@@ -89,9 +90,9 @@ class MainTab( tk.Frame ):
         self.entry_FeeRate.insert( 0, 0.001425 )
 
         # 儲存參數button
-        # [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         button_SaveParam = tk.Button( self, text = '儲存參數', command = self.SaveParam )
         button_SaveParam.place( x = 200, y = 100, width = width_5, height = height_1 )
+        self.SaveParam()
 
     def SetSysInvest( self ):
         self.SubNBGroup = ttk.Notebook( self )
@@ -177,7 +178,7 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_EndMonth = tk.Entry( self )
         self.entry_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.entry_EndMonth.insert( 0, '12' )
+        self.entry_EndMonth.insert( 0, '10' )
         # 結束日期 月label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_EndMonth = tk.Label( self, text = '月' )
@@ -229,7 +230,6 @@ class SubTab( tk.Frame ):
     def SetSysInvest_Result( self ):
         StartX = 0
         width_5 = 80
-        width_7 = 110
         height_1 = 20
         StartY = 10
 
@@ -266,25 +266,61 @@ class SubTab( tk.Frame ):
 
         # 最高虧損比例
         StartY += height_1
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_7, height_1 ]
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_MaxLossRatio = tk.Label( self, text = '最高虧損比例 : ', anchor = 'w' )
         label_MaxLossRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
         # 日期
         self.MaxLossRatioDate = tk.StringVar()
-        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_7, height_1 ]
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
         label_oMaxLossRatioDate = tk.Label( self, textvariable = self.MaxLossRatioDate )
         label_oMaxLossRatioDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.MaxLossRatioDate.set( '110/01/01' )
         # 比例
         self.MaxLossRatio = tk.DoubleVar()
-        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid * 2, StartY, width_5, height_1 ]
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
         label_oMaxLossRatio = tk.Label( self, textvariable = self.MaxLossRatio )
         label_oMaxLossRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
  
         # 最高損益金額
+        StartY += height_1
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        label_MaxLoss = tk.Label( self, text = '最高虧損金額 : ', anchor = 'w' )
+        label_MaxLoss.place( x = PosX, y = PosY, width = Wid, height = Hei )
         # 日期
+        self.MaxLossDate = tk.StringVar()
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
+        label_oMaxLossDate = tk.Label( self, textvariable = self.MaxLossDate )
+        label_oMaxLossDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.MaxLossDate.set( '110/01/01' )
         # 比例
+        self.MaxLoss = tk.IntVar()
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
+        label_oMaxLoss = tk.Label( self, textvariable = self.MaxLoss )
+        label_oMaxLoss.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
-        # 輸出交易紀錄
+        # 輸出excel button
+        StartY += 25
+        [ PosX, PosY, Wid, Hei ] = [ width_5 * 3, StartY, width_5, height_1 ]
+        button_StartCalc = tk.Button( self, text = '輸出excel', command = self.ExportLog )
+        button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        # 交易紀錄ListBox
+        StartY += height_1
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5 * 8, height_1 * 8 ]
+        self.List_Log = tk.Listbox( self, width = 380 )
+        self.List_Log.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        str = '買進日期'.ljust( 13 )
+        str = str +'買進價格'.ljust( 8 )
+        str = str +'買進數量(股)'.ljust( 10 )
+        str = str +'買進金額'.ljust( 8 )
+        str = str +'持股數量'.ljust( 8 )
+        str = str +'持股均價'.ljust( 8 )
+        str = str +'持股成本'.ljust( 8 )
+        str = str +'損益金額'.ljust( 8 )
+        str = str +'損益比例'.ljust( 8 )
+        self.List_Log.insert( 0, str )
+
+
 
     # 以下為function
     def Calc_InputParam( self ):
@@ -311,12 +347,18 @@ class SubTab( tk.Frame ):
         result.PLAmount.set( self.PLAmount )
         result.PLRatio.set( self.PLRatio )
         result.MaxLossRatioDate.set( self.MaxLossRatioDate )
-        # result.MaxLossRatioDate.set( '22222' )
         result.MaxLossRatio.set( self.MaxLossRatio )
-        # result.MaxLossDate.set( self.MaxLossDate )
-        # result.MaxLoss.set( self.MaxLoss )
+        result.MaxLossDate.set( self.MaxLossDate )
+        result.MaxLoss.set( self.MaxLoss )
 
+    def ExportLog( self ):
+        S.SaveFile( self.pMainWindow.Tab_SysInvest.SubTab_InputParam )
 
+    def InsertLogToList( self, Content ):
+        self.List_Log.insert( END, Content )
+    
+    def ClearList( self ):
+        self.List_Log.delete( 1, END )
 
 
 
