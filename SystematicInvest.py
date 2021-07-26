@@ -128,6 +128,7 @@ def SystematicInvest( tab : GUI.SubTab ):
             # 計算損益
             PLAmount = price * HoldQuantity * ( 1 - FeeRate - TaxRate ) - HoldAmount
             PLRatio = PLAmount / HoldAmount
+            tab.PLRecord.append( PLAmount )
             if PLAmount < MaxLoss:
                 # 寫入最大損益的dataframe
                 tab.df_MaxLoss.loc[ 0 ] = [ '最大金額', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]

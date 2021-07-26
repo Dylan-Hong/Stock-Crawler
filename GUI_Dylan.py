@@ -1,5 +1,8 @@
 from tkinter.constants import END
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -335,9 +338,14 @@ class SubTab( tk.Frame ):
         self.MaxLoss = 0
         self.MaxLossRatioDate = ''
         self.MaxLossRatio = 0
+        self.PLRecord = []
 
         S.SystematicInvest( self )
         self.Calc_PrintResult()
+        self.PlotDiagram()
+        # plt.plot( self.PLRecord )
+        # plt.show()
+        
         # 這個可以隱藏
         # self.label_InvestAmount.place_forget()
 
@@ -359,6 +367,15 @@ class SubTab( tk.Frame ):
     
     def ClearList( self ):
         self.List_Log.delete( 1, END )
+
+    def PlotDiagram( self ):
+        # 圖表輸出
+        pictrue = self.pMainWindow.Tab_SysInvest.SubTab_Picture
+        f = Figure( figsize = ( 20, 20 ), dpi = 100 )
+        a = f.add_subplot(111)
+        a.plot( self.PLRecord )
+        canvas = FigureCanvasTkAgg( f, pictrue )
+        canvas.get_tk_widget().place( x = 30, y = 30, width = 300, height = 300 )
 
 
 
