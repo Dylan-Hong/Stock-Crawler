@@ -42,6 +42,7 @@ def SystematicInvest( tab : GUI.SubTab ):
     tab.FileName = TargetStockNo +'_'+ Func.SetTimeString( StartYear, StartMonth ) + 'To' + Func.SetTimeString( EndYear, EndMonth )
 
     # 初始化參數
+    tab.pMainWindow.Tab_SysInvest.SubTab_Result.ClearList()
     YearCnt = MonthCnt = 0
     DelayTimeArray = [ 5, 6, 7, 4, 8 ]
     HoldAmount = 0
@@ -105,8 +106,20 @@ def SystematicInvest( tab : GUI.SubTab ):
             PLRatio = PLAmount / HoldAmount
 
             # 輸出資料：[ 買進日期、買進價格、買進股數、買進金額、持股數量、持股均價、持有金額、損益金額、損益比例 ]
-            tab.df_log.loc[ Index_log ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ 0 ], '{:.2f}'.format( ClosePrice ), BuyQuantity, BuyAmount,\
+            output = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ 0 ], '{:.2f}'.format( ClosePrice ), BuyQuantity, BuyAmount,\
                 HoldQuantity, '{:.2f}'.format( HoldCost ), HoldAmount, '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
+            tab.df_log.loc[ Index_log ] = output
+            # 存到ListBox
+            sStr = str( output[ 0 ] ).ljust( 15 )
+            sStr = sStr + str( output[ 1 ] ).ljust( 13 )
+            sStr = sStr + str( output[ 2 ] ).ljust( 22 )
+            sStr = sStr + str( output[ 3 ] ).ljust( 16 )
+            sStr = sStr + str( output[ 4 ] ).ljust( 16 )
+            sStr = sStr + str( output[ 5 ] ).ljust( 14 )
+            sStr = sStr + str( output[ 6 ] ).ljust( 15 )
+            sStr = sStr + str( output[ 7 ] ).ljust( 16 )
+            sStr = sStr + str( output[ 8 ] ).ljust( 16 )
+            tab.pMainWindow.Tab_SysInvest.SubTab_Result.InsertLogToList( sStr )
 
         # 最大損益計算
         for i in range( 0, len( data.index ) ):
@@ -118,7 +131,7 @@ def SystematicInvest( tab : GUI.SubTab ):
             if PLAmount < MaxLoss:
                 # 寫入最大損益的dataframe
                 tab.df_MaxLoss.loc[ 0 ] = [ '最大金額', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
-                tab.MaxLossDate = '最大金額', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ]
+                tab.MaxLossDate = data[ data.columns[ 0 ][ 0 ], '日期' ][ i ]
                 tab.MaxLoss = '{:.0f}'.format( MaxLoss )
             if PLRatio < MaxLossRatio:
                 tab.df_MaxLoss.loc[ 1 ] = [ '最大比例', data[ data.columns[ 0 ][ 0 ], '日期' ][ i ], HoldAmount, '{:.0f}'.format( MaxLoss ), '{:.2%}'.format( MaxLossRatio ) ]
