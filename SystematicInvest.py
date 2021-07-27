@@ -24,17 +24,17 @@ def Calc( tab : GUI.cST_SubTab_InputParam ):
     # input
     # -------------------------------------------------------------------------------
     # 設定日期
-    StartYear = int( tab.entry_StartYear.get() )
-    StartMonth = int( tab.entry_StartMonth.get() )
-    EndYear = int( tab.entry_EndYear.get() )
-    EndMonth = int( tab.entry_EndMonth.get() )
+    StartYear = int( tab.Combobox_StartYear.get() )
+    StartMonth = int( tab.Combobox_StartMonth.get() )
+    EndYear = int( tab.Combobox_EndYear.get() )
+    EndMonth = int( tab.Combobox_EndMonth.get() )
     # 設定標的
     TargetStockNo = tab.entry_StockNum.get()
     # 投資頻率與金額設定
     InvestFreq = int( tab.entry_InvestFreq.get() )
     InvestAmount = int( tab.entry_InvestAmount.get() )
     FeeRate = tab.pMainWindow.Tab_Parameter.FeeRate
-    TaxRate = tab.pMainWindow.Tab_Parameter.TaxRate
+    TaxRate = tab.pMainWindow.Tab_Parameter.TaxRate1.get()
     # -------------------------------------------------------------------------------
 
     # 檔案名稱

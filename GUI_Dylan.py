@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import tkinter as tk
-from tkinter import ttk
+from tkinter import DoubleVar, ttk
 from tkinter import filedialog
 import SystematicInvest
+import Function_def as Func
 
 class MainWindow( tk.Tk ):
     def __init__(self, title, size) -> None:
@@ -75,10 +76,16 @@ class cMT_Parameter( cTab ):
         label_TaxRate = tk.Label( self, text = '稅率 : ' )
         label_TaxRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
         # 稅率 entry
+        self.TaxRate1 = DoubleVar()
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
         self.entry_TaxRate = tk.Entry( self )
         self.entry_TaxRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
         self.entry_TaxRate.insert( 0, 0.003 )
+        self.radbutton_TaxRate1 = tk.Radiobutton( self, text = '0.3%', variable = self.TaxRate1, value = 0.003 )
+        self.radbutton_TaxRate1.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.radbutton_TaxRate2 = tk.Radiobutton( self, text = '0.15%', variable = self.TaxRate1, value = 0.0015 )
+        self.radbutton_TaxRate2.place( x = PosX + Wid, y = PosY, width = Wid, height = Hei )
+        self.radbutton_TaxRate1.select()
 
         # 手續費
         StartY += 20
@@ -137,8 +144,10 @@ class cST_SubTab_InputParam( cTab ):
         StartX = 0
         width_5 = 80
         width_1 = 20
-        height_1 = 20
-        width_entry = 50
+        height_1 = 30
+        width_entry = 75
+        width_year = 75
+        width_month = 50
 
         # 起始日期
         StartY = 10
@@ -146,51 +155,51 @@ class cST_SubTab_InputParam( cTab ):
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_StartDate = tk.Label( self, text = '起始日期 : ' )
         label_StartDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 起始日期 年entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_StartYear = tk.Entry( self )
-        self.entry_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.entry_StartYear.insert( 0, '2020' )
+        # 起始日期 年Combobox
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_year, Hei ]
+        self.Combobox_StartYear = ttk.Combobox( self , value = Func.GetYearArrayStr() )
+        self.Combobox_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_StartYear.current( 70 )
         # 起始日期 年label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_StartYear = tk.Label( self, text = '年' )
         label_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 起始日期 月entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_StartMonth = tk.Entry( self )
-        self.entry_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.entry_StartMonth.insert( 0, '10' )
+        # 起始日期 月Combobox
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_month, Hei ]
+        self.Combobox_StartMonth = ttk.Combobox( self , value = Func.GetMonthArrayStr() )
+        self.Combobox_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_StartMonth.current( 0 )
         # 起始日期 月label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_StartMonth = tk.Label( self, text = '月' )
         label_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
-        StartY += 20
+        StartY += Hei
         # 結束日期label
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_EndDate = tk.Label( self, text = '結束日期 : ' )
         label_EndDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 結束日期 年entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_EndYear = tk.Entry( self )
-        self.entry_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.entry_EndYear.insert( 0, '2020' )
+        # 結束日期 年Combobox
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_year, Hei ]
+        self.Combobox_EndYear = ttk.Combobox( self , value = Func.GetYearArrayStr() )
+        self.Combobox_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_EndYear.current( 70 )
         # 結束日期 年label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_EndYear = tk.Label( self, text = '年' )
         label_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 結束日期 月entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_EndMonth = tk.Entry( self )
-        self.entry_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.entry_EndMonth.insert( 0, '10' )
+        # 結束日期 月Combobox
+        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_month, Hei ]
+        self.Combobox_EndMonth = ttk.Combobox( self , value = Func.GetMonthArrayStr() )
+        self.Combobox_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_EndMonth.current( 0 )
         # 結束日期 月label
         [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
         label_EndMonth = tk.Label( self, text = '月' )
         label_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
         # 股票號碼
-        StartY += 20
+        StartY += Hei
         # 股票號碼label
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_StockNum = tk.Label( self, text = '股票號碼 : ' )
@@ -202,7 +211,7 @@ class cST_SubTab_InputParam( cTab ):
         self.entry_StockNum.insert( 0, '2330' )
 
         # 投資金額
-        StartY += 20
+        StartY += Hei
         # 投資金額label
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_InvestAmount = tk.Label( self, text = '投資金額 : ' )
@@ -214,7 +223,7 @@ class cST_SubTab_InputParam( cTab ):
         self.entry_InvestAmount.insert( 0, '10000' )
 
         # 投資頻率
-        StartY += 20
+        StartY += Hei
         # 投資金額label
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         label_InvestFreq = tk.Label( self, text = '投資頻率 : ' )
@@ -226,8 +235,8 @@ class cST_SubTab_InputParam( cTab ):
         self.entry_InvestFreq.insert( 0, '1' )
 
         # 開始計算按鈕
-        StartX = width_1 * 2 + width_entry * 2
-        StartY += 25
+        StartX = width_1 + width_entry * 2
+        StartY += Hei
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         button_StartCalc = tk.Button( self, text = '開始計算', command = self.Calc_InputParam )
         button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )

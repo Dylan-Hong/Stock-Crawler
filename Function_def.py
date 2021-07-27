@@ -24,3 +24,15 @@ def AccumulateOneMonth( Year, Month, YearCnt, MonthCnt, EndYear, EndMonth ):
         else:
             MonthCnt += 1
     return [ YearCnt, MonthCnt, BreakFlag ]
+
+def GetYearArrayStr():
+    YearArr = []
+    for i in range( 1950, 2021 ):
+        YearArr.append( i )
+    return YearArr
+
+def GetMonthArrayStr():
+    MonthArr = []
+    for i in range( 1, 13 ):
+        MonthArr.append( i )
+    return MonthArr
