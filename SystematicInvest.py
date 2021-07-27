@@ -20,8 +20,7 @@ import Function_def as Func
 3.第三個sheet : 過程中最大虧損金額與比例
  """
 
-# def SystematicInvest( tab ):
-def SystematicInvest( tab : GUI.SubTab ):
+def Calc( tab : GUI.cST_SubTab_InputParam ):
     # input
     # -------------------------------------------------------------------------------
     # 設定日期
@@ -153,11 +152,7 @@ def SystematicInvest( tab : GUI.SubTab ):
             time.sleep( random.choice( DelayTimeArray ) )
         Index_log += 1
 
-def PrintResult( tab : GUI.SubTab ):
-    pass
-
-
-def SaveFile( tab : GUI.SubTab ):
+def SaveFile( tab : GUI.cST_SubTab_Result ):
     # 建立writer，設定檔案路徑
     writer = pd.ExcelWriter( tab.pMainWindow.Tab_Parameter.Path + '/' + tab.FileName + '.xlsx', engine='openpyxl' )
     # 依序寫入三個dataframe到同一個
