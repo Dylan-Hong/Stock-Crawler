@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
-import SystematicInvest as S
+import SystematicInvest
 
 class MainWindow( tk.Tk ):
     def __init__(self, title, size) -> None:
@@ -24,29 +24,29 @@ class MainWindow( tk.Tk ):
         
         # 建立tab
         # 基本參數tab
-        self.Tab_Parameter = MainTab( self, '基本參數' )
-        self.Tab_Parameter.SetParameter()
+        self.Tab_Parameter = cMT_Parameter( self, self.MainNBGroup, '基本參數' )
 
         # 定期定額tab
-        self.Tab_SysInvest = MainTab( self, '定期定額' )
-        self.Tab_SysInvest.SetSysInvest()
+        self.Tab_SysInvest = cMT_SysInvest( self, self.MainNBGroup, '定期定額' )
 
         # 建立新功能的tab
-        self.Tab_Unknow = MainTab( self, '新功能' )
-        self.Tab_Unknow.SetUnknown()
+        self.Tab_Unknow = cMT_Unknown( self, self.MainNBGroup, '新功能' )
 
         # 預設開啟就選擇在定期定額，方便測試
         self.MainNBGroup.select( self.Tab_SysInvest )
 
-
-class MainTab( tk.Frame ):
-    def __init__( self, MainWindow : MainWindow, TabName ):
-        super().__init__( MainWindow.MainNBGroup )
+# tab的最基礎class
+class cTab( tk.Frame ):
+    def __init__( self, MainWindow : MainWindow, NBGroup, TabName ):
+        super().__init__( NBGroup )
         self.pMainWindow = MainWindow
         self.TabName = TabName
-        self.pMainWindow.MainNBGroup.add( self, text = self.TabName )
+        NBGroup.add( self, text = self.TabName)
 
-    def SetParameter( self ):
+class cMT_Parameter( cTab ):
+    def __init__( self, MainWindow : MainWindow, NBGroup : ttk.Notebook, TabName ):
+        super().__init__( MainWindow, NBGroup, TabName )
+        # NBGroup.add( self, text = self.TabName )
         StartX = 0
         width_5 = 80
         height_1 = 20
@@ -96,42 +96,44 @@ class MainTab( tk.Frame ):
         button_SaveParam = tk.Button( self, text = '儲存參數', command = self.SaveParam )
         button_SaveParam.place( x = 200, y = 100, width = width_5, height = height_1 )
         self.SaveParam()
+        #   以下為function
 
-    def SetSysInvest( self ):
-        self.SubNBGroup = ttk.Notebook( self )
-        self.SubNBGroup.place( x = 0, y = 0, width = 750, height = 400 )
-        self.SubTab_InputParam = SubTab( self, self.pMainWindow, '參數設定' )
-        self.SubTab_InputParam.SetSysInvest_InputParam()
-        self.SubTab_Result = SubTab( self, self.pMainWindow, '試算結果' )
-        self.SubTab_Result.SetSysInvest_Result()
-        self.SubTab_Picture = SubTab( self, self.pMainWindow, '圖表輸出' )
-        self.SubNBGroup.select( self.SubTab_InputParam )
-
-    def SetUnknown( self ):
-        label = tk.Label( self, text = '新功能放在這邊' )
-        label.place( x = 10, y = 10, width = 100, height = 20 )
-
-    #   以下為function
     def LoadPath( self ):
         Path = filedialog.askdirectory()
         self.entry_Path.insert( 0, Path )
-        pass
 
     def SaveParam( self ):
         self.Path = self.entry_Path.get()
         self.TaxRate = float( self.entry_TaxRate.get() )
         self.FeeRate = float( self.entry_FeeRate.get() )
 
+class cMT_SysInvest( cTab ):
+    def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
+        super().__init__( MainWindow, NBGroup, TabName )
+        # NBGroup.add( self, text = self.TabName )
+        # 設定Notebook of subtab
+        self.SubNBGroup = ttk.Notebook( self )
+        self.SubNBGroup.place( x = 0, y = 0, width = 750, height = 400 )
+        # 新增subtab : 參數設定
+        self.SubTab_InputParam = cST_SubTab_InputParam( self.pMainWindow, self.SubNBGroup, '參數設定' )
+        # self.SubTab_InputParam.SetSysInvest_InputParam()
+        # 新增subtab試算結果
+        self.SubTab_Result = cST_SubTab_Result( self.pMainWindow, self.SubNBGroup, '試算結果' )
+        # self.SubTab_Result.SetSysInvest_Result()
+        # 新增subtab圖表輸出
+        self.SubTab_Picture = cST_SubTab_Picture( self.pMainWindow, self.SubNBGroup, '圖表輸出' )
+        self.SubNBGroup.select( self.SubTab_InputParam )
 
-class SubTab( tk.Frame ):
-    def __init__( self, MainTab : MainTab, pMainWindow : MainWindow, TabName ):
-        super().__init__( MainTab.SubNBGroup )
-        self.pMainWindow = pMainWindow
-        self.TabName = TabName
-        MainTab.SubNBGroup.add( self, text = self.TabName )
+class cMT_Unknown( cTab ):
+    def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
+        super().__init__( MainWindow, NBGroup, TabName )
+        # NBGroup.add( self, text = self.TabName )
+        label = tk.Label( self, text = '新功能放在這邊' )
+        label.place( x = 10, y = 10, width = 100, height = 20 )
 
-    # 以下為tab內容
-    def SetSysInvest_InputParam( self ):
+class cST_SubTab_InputParam( cTab ):
+    def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
+        super().__init__( MainWindow, NBGroup, TabName )
         StartX = 0
         width_5 = 80
         width_1 = 20
@@ -229,8 +231,33 @@ class SubTab( tk.Frame ):
         [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
         button_StartCalc = tk.Button( self, text = '開始計算', command = self.Calc_InputParam )
         button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+    def Calc_InputParam( self ):
+        # 初始化模組需要資料
+        self.df_log = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進數量(股)', '買進金額', \
+        '持股數量', '持股均價', '持股成本', '損益金額', '損益比例' ] )
+        self.df_ProfitAndLoss = pd.DataFrame( columns = [ '計算日期', '損益金額', '損益比例' ] )
+        self.df_MaxLoss = pd.DataFrame( columns = [ '項目', '日期', '總投入資金', '虧損金額', '虧損比例' ] )
+        self.FileName = ''
+        self.EndDate = ''
+        self.MaxLossDate = ''
+        self.MaxLoss = 0
+        self.MaxLossRatioDate = ''
+        self.MaxLossRatio = 0
+        self.PLRecord = []
+
+        SystematicInvest.Calc( self )
+        self.pMainWindow.Tab_SysInvest.SubTab_Result.Calc_PrintResult()
+        # self.pMainWindow.Tab_SysInvest.SubTab_Picture.PlotDiagram()
+        # plt.plot( self.PLRecord )
+        # plt.show()
         
-    def SetSysInvest_Result( self ):
+        # 這個可以隱藏
+        # self.label_InvestAmount.place_forget()
+
+class cST_SubTab_Result( cTab ):
+    def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
+        super().__init__( MainWindow, NBGroup, TabName )
         StartX = 0
         width_5 = 80
         height_1 = 20
@@ -322,60 +349,60 @@ class SubTab( tk.Frame ):
         str = str +'損益金額'.ljust( 8 )
         str = str +'損益比例'.ljust( 8 )
         self.List_Log.insert( 0, str )
-
-
-
-    # 以下為function
-    def Calc_InputParam( self ):
-        # 初始化模組需要資料
-        self.df_log = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進數量(股)', '買進金額', \
-        '持股數量', '持股均價', '持股成本', '損益金額', '損益比例' ] )
-        self.df_ProfitAndLoss = pd.DataFrame( columns = [ '計算日期', '損益金額', '損益比例' ] )
-        self.df_MaxLoss = pd.DataFrame( columns = [ '項目', '日期', '總投入資金', '虧損金額', '虧損比例' ] )
-        self.FileName = ''
-        self.EndDate = ''
-        self.MaxLossDate = ''
-        self.MaxLoss = 0
-        self.MaxLossRatioDate = ''
-        self.MaxLossRatio = 0
-        self.PLRecord = []
-
-        S.SystematicInvest( self )
-        self.Calc_PrintResult()
-        self.PlotDiagram()
-        # plt.plot( self.PLRecord )
-        # plt.show()
-        
-        # 這個可以隱藏
-        # self.label_InvestAmount.place_forget()
-
+    
     def Calc_PrintResult( self ):
-        result = self.pMainWindow.Tab_SysInvest.SubTab_Result
-        result.EndDate.set( self.EndDate )
-        result.PLAmount.set( self.PLAmount )
-        result.PLRatio.set( self.PLRatio )
-        result.MaxLossRatioDate.set( self.MaxLossRatioDate )
-        result.MaxLossRatio.set( self.MaxLossRatio )
-        result.MaxLossDate.set( self.MaxLossDate )
-        result.MaxLoss.set( self.MaxLoss )
+        InputParam = self.pMainWindow.Tab_SysInvest.SubTab_InputParam
+        self.EndDate.set( InputParam.EndDate )
+        self.PLAmount.set( InputParam.PLAmount )
+        self.PLRatio.set( InputParam.PLRatio )
+        self.MaxLossRatioDate.set( InputParam.MaxLossRatioDate )
+        self.MaxLossRatio.set( InputParam.MaxLossRatio )
+        self.MaxLossDate.set( InputParam.MaxLossDate )
+        self.MaxLoss.set( InputParam.MaxLoss )
 
     def ExportLog( self ):
-        S.SaveFile( self.pMainWindow.Tab_SysInvest.SubTab_InputParam )
+        SystematicInvest.SaveFile( self.pMainWindow.Tab_SysInvest.SubTab_InputParam )
 
     def InsertLogToList( self, Content ):
         self.List_Log.insert( END, Content )
-    
+
     def ClearList( self ):
         self.List_Log.delete( 1, END )
 
-    def PlotDiagram( self ):
-        # 圖表輸出
-        pictrue = self.pMainWindow.Tab_SysInvest.SubTab_Picture
-        f = Figure( figsize = ( 20, 20 ), dpi = 100 )
-        a = f.add_subplot(111)
-        a.plot( self.PLRecord )
-        canvas = FigureCanvasTkAgg( f, pictrue )
-        canvas.get_tk_widget().place( x = 30, y = 30, width = 300, height = 300 )
+class cST_SubTab_Picture( cTab ):
+    def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
+        super().__init__( MainWindow, NBGroup, TabName )
+        StartX = 0
+        width_5 = 80
+        height_1 = 20
+        # 視窗內畫圖 button
+        StartY = 10
+        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
+        button_StartCalc = tk.Button( self, text = '視窗內畫圖', command = self.PlotDiagramInTk )
+        button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
+        button_StartCalc = tk.Button( self, text = '新視窗畫圖', command = self.PlotNewWindow )
+        button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+
+    def PlotDiagramInTk( self ):
+        # 圖表輸出到tab
+        fig = Figure()
+        a = fig.add_subplot(111)
+        a.plot( self.pMainWindow.Tab_SysInvest.SubTab_InputParam.PLRecord )
+        canvas = FigureCanvasTkAgg( fig, self )
+        canvas.get_tk_widget().place( x = 30, y = 30, width = 700, height = 300 )
+    
+    def PlotNewWindow( self ):
+        PLRecord = self.pMainWindow.Tab_SysInvest.SubTab_InputParam.PLRecord
+        plt.figure( figsize = ( 8, 4.5 ) )
+        plt.plot( PLRecord )
+        plt.title( "Change of Profit and Loss" )
+        plt.xlabel( 'Trade day' )
+        plt.ylabel( 'Profit and Loss' )
+        plt.grid()
+        plt.xlim( [ 0, len( PLRecord )])
+        plt.show()
 
 
 
