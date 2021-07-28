@@ -21,8 +21,9 @@ import Function_def as Func
  """
 
 def Calc( tab : GUI.cST_SubTab_InputParam ):
-    # input
-    # -------------------------------------------------------------------------------
+    # 進度條開始動作
+    tab.Progressbar.start()
+    # ----------------------------------input : 讀取GUI上輸入的參數---------------------------------------
     # 設定日期
     StartYear = int( tab.Combobox_StartYear.get() )
     StartMonth = int( tab.Combobox_StartMonth.get() )
@@ -34,33 +35,22 @@ def Calc( tab : GUI.cST_SubTab_InputParam ):
     InvestFreq = int( tab.entry_InvestFreq.get() )
     InvestAmount = int( tab.entry_InvestAmount.get() )
     FeeRate = tab.pMainWindow.Tab_Parameter.FeeRate
-    TaxRate = tab.pMainWindow.Tab_Parameter.TaxRate1.get()
-    # -------------------------------------------------------------------------------
+    TaxRate = tab.pMainWindow.Tab_Parameter.TaxRate
+    # ---------------------------------------------------------------------------------------------------
 
     # 檔案名稱
     tab.FileName = TargetStockNo +'_'+ Func.SetTimeString( StartYear, StartMonth ) + 'To' + Func.SetTimeString( EndYear, EndMonth )
 
     # 初始化參數
-    tab.pMainWindow.Tab_SysInvest.SubTab_Result.ClearList()
     YearCnt = MonthCnt = 0
     DelayTimeArray = [ 5, 6, 7, 4, 8 ]
     HoldAmount = 0
     HoldQuantity = 0
     HoldCost = 0
     BuyFlag = 0
-    # df_log = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進數量(股)', '買進金額', \
-    #     '持股數量', '持股均價', '持股成本', '損益金額', '損益比例' ] )
     Index_log = 0
-    # df_ProfitAndLoss = pd.DataFrame( columns = [ '計算日期', '損益金額', '損益比例' ] )
-    Index_PL = 0
-    # df_MaxLoss = pd.DataFrame( columns = [ '項目', '日期', '總投入資金', '虧損金額', '虧損比例' ] )
-    Index_MaxLoss = 0
     MaxLoss = 0
     MaxLossRatio = 0
-
-    # 建立dataframe
-    oFrame = pd.DataFrame( columns = [ '買進日期', '買進價格', '買進股數', '買進金額', '持股數量', '持股成本', '持股金額', '損益金額', '損益比例' ] )
-    oFrameIndex = 0
 
     # 分為三塊 : (1)設定日期並判斷是否為買進月份，或是是否已經結束 (2)若為買進月更新資訊 (3)計算最大損益
     while( 1 ):
@@ -73,8 +63,6 @@ def Calc( tab : GUI.cST_SubTab_InputParam ):
         BuyFlag = Func.IsBuyMonth( Year, Month, StartYear, StartMonth, InvestFreq )
         # 將日期轉為字串格式
         TargetDate = Func.SetTimeString( Year, Month )
-        # 輸出當下計算日期至終端機，確認沒當機
-        print( TargetDate )
         
         # 從網頁上讀資料
         # 設定路徑
@@ -145,14 +133,15 @@ def Calc( tab : GUI.cST_SubTab_InputParam ):
             # 計算最終損益
             tab.df_ProfitAndLoss.loc[ 0 ] = [ data[ data.columns[ 0 ][ 0 ], '日期' ][ len( data.index ) - 1 ], '{:.0f}'.format( PLAmount ), '{:.2%}'.format( PLRatio ) ]
             tab.EndDate = data[ data.columns[ 0 ][ 0 ], '日期' ][ len( data.index ) - 1 ]
-            tab.PLAmount = '{:.0f}'.format( PLAmount )
-            tab.PLRatio = '{:.2%}'.format( PLRatio )
+            tab.PLAmount = PLAmount
+            tab.PLRatio = PLRatio
+            tab.Progressbar.stop()
             break
         else:
             time.sleep( random.choice( DelayTimeArray ) )
         Index_log += 1
 
-def SaveFile( tab : GUI.cST_SubTab_Result ):
+def SaveFile( tab : GUI.cST_SubTab_InputParam ):
     # 建立writer，設定檔案路徑
     writer = pd.ExcelWriter( tab.pMainWindow.Tab_Parameter.Path + '/' + tab.FileName + '.xlsx', engine='openpyxl' )
     # 依序寫入三個dataframe到同一個
@@ -161,10 +150,3 @@ def SaveFile( tab : GUI.cST_SubTab_Result ):
     tab.df_MaxLoss.to_excel( writer, sheet_name = '最大虧損', index = False )
 
     writer.save()
-
-
-""" 
-其他紀錄
-1.需要擷取的資料來源：股利、當天即時價格、上櫃、籌碼
-2.爬資料的方法：目前需要sleep去避免被鎖，考慮用其他方法
- """
