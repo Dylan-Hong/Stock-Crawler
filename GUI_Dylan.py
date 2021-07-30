@@ -9,6 +9,55 @@ import SystematicInvest
 import Function_def as Func
 import threading
 
+def Create_NoteBook( InputFrame, iRow, iColumn, iPadx, iPady ):
+    NoteBook = ttk.Notebook( InputFrame )
+    NoteBook.grid( row = iRow, column = iColumn, ipadx = iPadx, ipady = iPady )
+    return NoteBook
+
+def Create_Label( InputFrame, iText, iRow, iColumn, iSticky, iColspan ):
+    Label = ttk.Label( InputFrame, text = iText )
+    Label.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+
+def Create_LabelVar( InputFrame, iRow, iColumn, iSticky, iColspan, type ):
+    if type == 'Str':
+        Var = tk.StringVar()
+    elif type == 'Int':
+        Var = tk.IntVar()
+    elif type == 'Double':
+        Var = tk.DoubleVar()
+    Label = ttk.Label( InputFrame, textvariable = Var )
+    Label.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+    return Var
+
+def Create_Entry( InputFrame, iRow, iColumn, iSticky, iColspan ):
+    Entry = ttk.Entry( InputFrame )
+    Entry.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+    return Entry
+
+def Create_Button( InputFrame, iText, iCommand, iRow, iColumn, iSticky, iColspan ):
+    Button = ttk.Button( InputFrame, text = iText, command = iCommand )
+    Button.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+
+def Create_Radiobutton( InputFrame, iText, iVar, iValue, iRow, iColumn, iSticky, iColspan ):
+    Radiobutton = tk.Radiobutton( InputFrame, text = iText, variable = iVar, value = iValue )
+    Radiobutton.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+    return Radiobutton
+
+def Create_Combobox( InputFrame, StrArr, iRow, iColumn, iSticky, iColspan ):
+    Combobox = ttk.Combobox( InputFrame , value = StrArr )
+    Combobox.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+    return Combobox
+
+def Create_Progressbar( InputFrame, iMode, iRow, iColumn, iSticky, iColspan ):
+    Progressbar = ttk.Progressbar( InputFrame, mode = iMode )
+    Progressbar.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+    return Progressbar
+    
+def Create_ListBox( InputFrame, iWidth, iRow, iColumn, iSticky, iColspan ):
+    ListBox = tk.Listbox( InputFrame, width = iWidth )
+    ListBox.grid( row = iRow, column = iColumn, sticky = iSticky, columnspan = iColspan, padx = 5, pady = 5 )
+    return ListBox
+
 class MainWindow( tk.Tk ):
     def __init__( self, title, size ) -> None:
         # 這個可以實作父類別的建構子，要寫這個才能用
@@ -18,8 +67,7 @@ class MainWindow( tk.Tk ):
         self.geometry( size )
 
         # 建立主選單的notebook
-        self.MainNBGroup = ttk.Notebook( self )
-        self.MainNBGroup.place( x = 0, y = 0, width = 800, height = 450 )
+        self.MainNBGroup = Create_NoteBook( self, 0, 0, 300, 200 )
         
         # 建立tab
         # 基本參數tab
@@ -34,7 +82,6 @@ class MainWindow( tk.Tk ):
         # 預設開啟就選擇在定期定額，方便測試
         self.MainNBGroup.select( self.Tab_SysInvest )
 
-
 # tab的最基礎class
 class cTab( tk.Frame ):
     def __init__( self, MainWindow : MainWindow, NBGroup, TabName ):
@@ -45,63 +92,36 @@ class cTab( tk.Frame ):
 class cMT_Parameter( cTab ):
     def __init__( self, MainWindow : MainWindow, NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
-        StartX = 0
-        width_5 = 80
-        width_1 = 20
-        height_1 = 20
-        width_entry = 100
 
-        # 存檔路徑
-        StartY = 10
         # 存檔路徑label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_Path = tk.Label( self, text = '存檔路徑 : ' )
-        label_Path.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        label_Path = Create_Label( self, '存檔路徑 : ', 0, 0, 'w', 1 )
         # 存檔路徑entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, 200, Hei ]
-        self.entry_Path = tk.Entry( self )
-        self.entry_Path.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_Path = Create_Entry( self, 0, 1, 'w', 2 )
         self.entry_Path.insert( 0, './' )
         # 存檔路徑button
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_5, Hei ]
-        self.Button_SetPath = tk.Button( self, text = '設定', command = self.LoadPath )
-        self.Button_SetPath.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Button_SetPath = Create_Button( self, '設定', self.LoadPath, 0, 3, 'w', 1 )
 
-        # 稅率
-        StartY += 20
         # 稅率 label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_TaxRate = tk.Label( self, text = '稅率 : ' )
-        label_TaxRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '稅率 : ', 1, 0, 'w', 1 )
         # 稅率 radio button，設定為0.3%或是0.15%單選
-        self.TaxRate1 = tk.DoubleVar()
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.radbutton_TaxRate1 = tk.Radiobutton( self, text = '0.3%', variable = self.TaxRate1, value = 0.003 )
-        self.radbutton_TaxRate1.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.radbutton_TaxRate2 = tk.Radiobutton( self, text = '0.15%', variable = self.TaxRate1, value = 0.0015 )
-        self.radbutton_TaxRate2.place( x = PosX + Wid, y = PosY, width = Wid, height = Hei )
+        self.TaxRateVar = tk.DoubleVar()
+        self.radbutton_TaxRate1 = Create_Radiobutton( self, '0.3%', self.TaxRateVar, 0.003, 1, 1, 'w', 1 )
+        self.radbutton_TaxRate2 = Create_Radiobutton( self, '0.15%', self.TaxRateVar, 0.0015, 1, 2, 'w', 1 )
         # 預設0.3%
         self.radbutton_TaxRate1.select()
 
-        # 手續費
-        StartY += 20
         # 手續費label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_FeeRate = tk.Label( self, text = '手續費 : ' )
-        label_FeeRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '手續費 : ', 2, 0, 'w', 1 )
+
         # 手續費entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_FeeRate = tk.Entry( self )
-        self.entry_FeeRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_FeeRate = Create_Entry( self, 2, 1, 'w', 2 )
         self.entry_FeeRate.insert( 0, 0.1425 )
+
         # 手續費 % label
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_1, height_1 ]
-        label_FeeRate = tk.Label( self, text = '%' )
-        label_FeeRate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '%', 2, 3, 'w', 1 )
 
         # 儲存參數button
-        button_SaveParam = tk.Button( self, text = '儲存參數', command = self.SaveParam )
-        button_SaveParam.place( x = 200, y = 100, width = width_5, height = height_1 )
+        Create_Button( self, '儲存參數', self.SaveParam, 4, 3, 'w', 1 )
         
         # 建立tab的時候，先存下預設的參數
         self.SaveParam()
@@ -111,15 +131,14 @@ class cMT_Parameter( cTab ):
 
     def SaveParam( self ):
         self.Path = self.entry_Path.get()
-        self.TaxRate = float( self.TaxRate1.get() )
+        self.TaxRate = float( self.TaxRateVar.get() )
         self.FeeRate = float( self.entry_FeeRate.get() ) * 0.01
 
 class cMT_SysInvest( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
         # 設定Notebook of subtab
-        self.SubNBGroup = ttk.Notebook( self )
-        self.SubNBGroup.place( x = 0, y = 0, width = 750, height = 400 )
+        self.SubNBGroup = Create_NoteBook( self, 0, 0, 290, 190 )
         # 新增subtab : 參數設定
         self.SubTab_InputParam = cST_SubTab_InputParam( self.pMainWindow, self.SubNBGroup, '參數設定' )
         # 新增subtab試算結果
@@ -138,121 +157,60 @@ class cMT_Unknown( cTab ):
 class cST_SubTab_InputParam( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
-        StartX = 0
-        width_5 = 80
-        width_1 = 20
-        height_1 = 30
-        width_entry = 75
-        width_year = 75
-        width_month = 50
 
-        # 起始日期
-        StartY = 10
         # 起始日期 label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_StartDate = tk.Label( self, text = '起始日期 : ' )
-        label_StartDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '起始日期 : ', 0, 0, 'w', 1 )
         # 起始日期 年Combobox
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_year, Hei ]
-        self.Combobox_StartYear = ttk.Combobox( self , value = Func.GetYearArrayStr() )
-        self.Combobox_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_StartYear = Create_Combobox( self, Func.GetYearArrayStr(), 0, 1, 'w', 1 )
         self.Combobox_StartYear.current( 70 )
         # 起始日期 年label
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
-        label_StartYear = tk.Label( self, text = '年' )
-        label_StartYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '年', 0, 2, 'w', 1 )
         # 起始日期 月Combobox
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_month, Hei ]
-        self.Combobox_StartMonth = ttk.Combobox( self , value = Func.GetMonthArrayStr() )
-        self.Combobox_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_StartMonth = Create_Combobox( self, Func.GetMonthArrayStr(), 0, 3, 'w', 1 )
         self.Combobox_StartMonth.current( 0 )
         # 起始日期 月label
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
-        label_StartMonth = tk.Label( self, text = '月' )
-        label_StartMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '月', 0, 4, 'w', 1 )
 
-        # 結束日期
-        StartY += Hei
         # 結束日期label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_EndDate = tk.Label( self, text = '結束日期 : ' )
-        label_EndDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '結束日期 : ', 1, 0, 'w', 1 )
         # 結束日期 年Combobox
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_year, Hei ]
-        self.Combobox_EndYear = ttk.Combobox( self , value = Func.GetYearArrayStr() )
-        self.Combobox_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_EndYear = Create_Combobox( self, Func.GetYearArrayStr(), 1, 1, 'w', 1 )
         self.Combobox_EndYear.current( 70 )
         # 結束日期 年label
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
-        label_EndYear = tk.Label( self, text = '年' )
-        label_EndYear.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '年', 1, 2, 'w', 1 )
         # 結束日期 月Combobox
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_month, Hei ]
-        self.Combobox_EndMonth = ttk.Combobox( self , value = Func.GetMonthArrayStr() )
-        self.Combobox_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Combobox_EndMonth = Create_Combobox( self, Func.GetMonthArrayStr(), 1, 3, 'w', 1 )
         self.Combobox_EndMonth.current( 0 )
         # 結束日期 月label
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_1, Hei ]
-        label_EndMonth = tk.Label( self, text = '月' )
-        label_EndMonth.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '月', 1, 4, 'w', 1 )
 
-        # 股票號碼
-        StartY += Hei
         # 股票號碼label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_StockNum = tk.Label( self, text = '股票號碼 : ' )
-        label_StockNum.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '股票號碼 : ', 2, 0, 'w', 1 )
         # 股票號碼entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_StockNum = tk.Entry( self )
-        self.entry_StockNum.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_StockNum = Create_Entry( self, 2, 1, 'w', 1 )
         self.entry_StockNum.insert( 0, '2330' )
 
-        # 投資金額
-        StartY += Hei
         # 投資金額label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_InvestAmount = tk.Label( self, text = '投資金額 : ' )
-        label_InvestAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '投資金額 : ', 3, 0, 'w', 1 )
         # 投資金額entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_InvestAmount = tk.Entry( self )
-        self.entry_InvestAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.entry_InvestAmount = Create_Entry( self, 3, 1, 'w', 1 )
         self.entry_InvestAmount.insert( 0, '10000' )
         # 投資金額單位label
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_5, Hei ]
-        label_InvestFreq = tk.Label( self, text = 'NTD' )
-        label_InvestFreq.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, 'NTD', 3, 2, 'w', 1 )
 
-        # 投資頻率
-        StartY += Hei
-        # 投資金額label
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_InvestFreq = tk.Label( self, text = '投資頻率 : ' )
-        label_InvestFreq.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 投資金額entry
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_entry, Hei ]
-        self.entry_InvestFreq = tk.Entry( self )
-        self.entry_InvestFreq.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 投資頻率label
+        Create_Label( self, '投資頻率 : ', 4, 0, 'w', 1 )
+        # 投資頻率entry
+        self.entry_InvestFreq = Create_Entry( self, 4, 1, 'w', 1 )
         self.entry_InvestFreq.insert( 0, '1' )
-        # 投資金額單位label
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, PosY, width_5, Hei ]
-        label_InvestFreq = tk.Label( self, text = '月 / 次' )
-        label_InvestFreq.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 投資頻率單位label
+        Create_Label( self, '月 / 次', 4, 2, 'w', 1 )
         
         # 開始計算按鈕
-        StartX = width_1 + width_entry * 2
-        StartY += Hei
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        self.button_StartCalc = tk.Button( self, text = '開始計算', command = self.Thread_Calc_InputParam )
-        self.button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.button_StartCalc = Create_Button( self, '開始計算', self.Thread_Calc_InputParam, 5, 5, 'w', 1 )
         
         # 進度條
-        StartY += Hei
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        # indeterminate就是會一直跑
-        self.Progressbar = ttk.Progressbar( self, mode="indeterminate" )
-        self.Progressbar.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.Progressbar = Create_Progressbar( self, "indeterminate", 6, 5, 'w', 1 )
 
     def Thread_Calc_InputParam( self ):
         # 因為設定成thread後，只能執行一次，因此要另外call 一個funtcion每次按下按鈕，就設定一次thread
@@ -285,87 +243,41 @@ class cST_SubTab_InputParam( cTab ):
 class cST_SubTab_Result( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
-        StartX = 0
-        width_5 = 80
-        height_1 = 20
-        StartY = 10
 
-        # 結算日期
-        # 標題
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_SettleDate = tk.Label( self, text = '結算日期 : ' )
-        label_SettleDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        # 結果
-        self.EndDate = tk.StringVar()
-        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
-        label_oEndDate = tk.Label( self, textvariable = self.EndDate )
-        label_oEndDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        # 結算日期標題
+        Create_Label( self, '結算日期 : ', 0, 0, 'w', 1 )
+        # 結算日期結果
+        self.EndDate = Create_LabelVar( self, 0, 1, 'w', 1, 'Str' )
 
-        StartY += height_1
         # 損益金額
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_PLAmount = tk.Label( self, text = '損益金額 : ' )
-        label_PLAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.PLAmount = tk.IntVar()
-        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
-        label_oPLAmount = tk.Label( self, textvariable = self.PLAmount )
-        label_oPLAmount.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '損益金額 : ', 1, 0, 'w', 1 )
+        self.PLAmount = Create_LabelVar( self, 1, 1, 'w', 1, 'Str' )
 
-        StartY += height_1
         # 損益比例
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_PLRatio = tk.Label( self, text = '損益比例 : ' )
-        label_PLRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
-        self.PLRatio = tk.DoubleVar()
-        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
-        label_oPLRatio = tk.Label( self, textvariable = self.PLRatio )
-        label_oPLRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '損益比例 : ', 2, 0, 'w', 1 )
+        self.PLRatio = Create_LabelVar( self, 2, 1, 'w', 1, 'Double' )
 
         # 最高虧損比例
-        StartY += height_1
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_MaxLossRatio = tk.Label( self, text = '最高虧損比例 : ', anchor = 'w' )
-        label_MaxLossRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '最高虧損比例 : ', 3, 0, 'w', 1 )
         # 日期
-        self.MaxLossRatioDate = tk.StringVar()
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
-        label_oMaxLossRatioDate = tk.Label( self, textvariable = self.MaxLossRatioDate )
-        label_oMaxLossRatioDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.MaxLossRatioDate = Create_LabelVar( self, 3, 1, 'w', 1, 'Str' )
         self.MaxLossRatioDate.set( '---/--/--' )
         # 比例
-        self.MaxLossRatio = tk.DoubleVar()
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
-        label_oMaxLossRatio = tk.Label( self, textvariable = self.MaxLossRatio )
-        label_oMaxLossRatio.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.MaxLossRatio = Create_LabelVar( self, 3, 2, 'w', 1, 'Double' )
  
         # 最高損益金額
-        StartY += height_1
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        label_MaxLoss = tk.Label( self, text = '最高虧損金額 : ', anchor = 'w' )
-        label_MaxLoss.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Label( self, '最高虧損金額 : ', 4, 0, 'w', 1 )
         # 日期
-        self.MaxLossDate = tk.StringVar()
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
-        label_oMaxLossDate = tk.Label( self, textvariable = self.MaxLossDate )
-        label_oMaxLossDate.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.MaxLossDate = Create_LabelVar( self, 4, 1, 'w', 1, 'Str' )
         self.MaxLossDate.set( '---/--/--' )
         # 比例
-        self.MaxLoss = tk.IntVar()
-        [ PosX, PosY, Wid, Hei ] = [ PosX + Wid, StartY, width_5, height_1 ]
-        label_oMaxLoss = tk.Label( self, textvariable = self.MaxLoss )
-        label_oMaxLoss.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.MaxLoss = Create_LabelVar( self, 4, 2, 'w', 1, 'Int' )
 
         # 輸出excel button
-        StartY += 25
-        [ PosX, PosY, Wid, Hei ] = [ width_5 * 3, StartY, width_5, height_1 ]
-        button_StartCalc = tk.Button( self, text = '輸出excel', command = self.ExportLog )
-        button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Button( self, '輸出excel', self.ExportLog, 5, 3, 'w', 1 )
 
         # 交易紀錄ListBox
-        StartY += height_1
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5 * 8, height_1 * 8 ]
-        self.List_Log = tk.Listbox( self, width = 380 )
-        self.List_Log.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        self.List_Log = Create_ListBox( self, 100, 6, 0, 'w', 10 )
         # 生成的時候先寫入第一欄標題
         str = '買進日期'.ljust( 13 )
         str = str +'買進價格'.ljust( 8 )
@@ -402,18 +314,9 @@ class cST_SubTab_Result( cTab ):
 class cST_SubTab_Picture( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
-        StartX = 0
-        width_5 = 80
-        height_1 = 20
-        # 視窗內畫圖 button
-        StartY = 10
-        [ PosX, PosY, Wid, Hei ] = [ StartX, StartY, width_5, height_1 ]
-        button_StartCalc = tk.Button( self, text = '視窗內畫圖', command = self.PlotDiagramInTk )
-        button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
 
-        [ PosX, PosY, Wid, Hei ] = [ StartX + Wid, StartY, width_5, height_1 ]
-        button_StartCalc = tk.Button( self, text = '新視窗畫圖', command = self.PlotNewWindow )
-        button_StartCalc.place( x = PosX, y = PosY, width = Wid, height = Hei )
+        Create_Button( self, '視窗內畫圖', self.PlotDiagramInTk , 0, 0, 'w', 1 )
+        Create_Button( self, '新視窗畫圖', self.PlotNewWindow , 0, 1, 'w', 1 )
 
     def PlotDiagramInTk( self ):
         # 圖表輸出到tab，這部分其他設定也不會用
