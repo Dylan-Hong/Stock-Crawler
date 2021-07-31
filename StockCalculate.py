@@ -232,10 +232,13 @@ def SearchAndCalculate(initialtime, targetstock, payment, freq, C1, C2):
     InitialMonth = int(InitialTime[4:6].zfill(1))
     InitialDay = int(InitialTime[6:8].zfill(1))
     TimeNow = time.localtime()
-    YearNow = TimeNow.tm_year
+    # YearNow = TimeNow.tm_year
+    YearNow = 2021
     # 在讀取月份時，會有1~9月前面沒有0情況，因此利用zfill功能讓前面補0
-    MonthNow = TimeNow.tm_mon
-    DayNow = TimeNow.tm_mday
+    # MonthNow = TimeNow.tm_mon
+    # DayNow = TimeNow.tm_mday
+    MonthNow = 7
+    DayNow = 30
     # 稅費相關參數
     c1 = C1
     c2 = C2

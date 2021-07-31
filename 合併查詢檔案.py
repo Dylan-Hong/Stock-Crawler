@@ -7,6 +7,7 @@ from tkinter.filedialog import askdirectory
 import tkinter.messagebox
 from tkinter import scrolledtext
 import pandas as pd
+import matplotlib.pyplot as plt
 import threading
 import StockCalculate as CAL
 # pd.set_option('display.unicode.ambiguous_as_wide', True)
@@ -25,9 +26,11 @@ Input_Word = []
 global SD_Show
 global TR_Show
 global CA_Show
+global CA_Show_ForDraw
 SD_Show = pd.DataFrame()
 TR_Show = pd.DataFrame()
 CA_Show = pd.DataFrame()
+CA_Show_ForDraw = pd.DataFrame()
 # caldata = {'日期': [1], '持股單位': [1], '均價': [1], '總成本': [1],
 #            '總現值': [1], '損益金額': [1], '損益比例': [1], '當天股價': [1]}
 # CA = pd.DataFrame(caldata)
@@ -104,9 +107,10 @@ def SearchAndCalculate():
     global SD_Show
     global TR_Show
     global CA_Show
+    global CA_Show_ForDraw
     [SD_Show, TR_Show, CA_Show] = CAL.SearchAndCalculate(Input_Word[0], Input_Word[1], Input_Word[3],
                                                          Input_Word[2], Parameters[2], Parameters[3])
-
+    CA_Show_ForDraw = CA_Show.copy()
     pass
 
 
@@ -151,6 +155,22 @@ def Show_Result(SD_Show, TR_Show, CA_Show):
 
     Text_2_1.insert("insert", CA_Show)
     Text_3_1.insert("insert", TR_Show)
+    pass
+
+
+def Graph():
+    global CA_Show_ForDraw
+    # 畫第一條線，plt.plot(x, y, c)參數分別為x軸資料、y軸資料及線顏色 = 紅色
+    plt.plot(CA_Show_ForDraw['日期'], CA_Show_ForDraw['損益金額'], c="r")
+    # 設定圖例，參數為標籤、位置
+    plt.legend(labels=["Gain/Loss"], loc='best')
+    plt.xlabel("Date", fontweight="bold",
+               fontsize=0.8)                # 設定x軸標題及粗體
+    plt.ylabel("$", fontweight="bold", fontsize=0.8)    # 設定y軸標題及粗體
+    plt.title("Gain/Loss", fontsize=10, fontweight="bold",
+              y=1.1)   # 設定標題、文字大小、粗體及位置
+    plt.xticks(rotation=90)   # 將x軸數字旋轉45度，避免文字重疊
+    plt.show()
     pass
 
 
@@ -295,6 +315,15 @@ Text_3_1 = scrolledtext.ScrolledText(frame_t3_1, width=92, height=34)
 Text_3_1.grid(row=0, column=0)
 '------------------------------------------------------------------------'
 '------------------------------------------------------------------------'
+# 建立tab_4中的Frame
+frame_t4_1 = tk.Frame(tab_4, width=400, height=250, borderwidth=10)
+# 想讓Frame在左上方，因此我使用anchor定義方位
+frame_t4_1.pack()
+Click_Request_4_1 = tk.Button(
+    frame_t4_1, text="產生圖表", fg="black", command=Graph, relief=GROOVE)
+Click_Request_4_1.pack()
+
+
 # 要視窗顯示，一定需要這一行
 window.mainloop()
 
