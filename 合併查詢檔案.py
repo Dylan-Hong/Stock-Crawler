@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 from os import path
 import tkinter as tk
+from tkinter.constants import GROOVE, RIDGE, SUNKEN
 import tkinter.ttk as ttk
 from tkinter.filedialog import askdirectory
+import tkinter.messagebox
+from tkinter import scrolledtext
 import pandas as pd
+import threading
 import StockCalculate as CAL
+# pd.set_option('display.unicode.ambiguous_as_wide', True)
+pd.set_option('display.unicode.east_asian_width', True)
 
 # 建立主視窗，並命名為window
 window = tk.Tk()
@@ -16,11 +22,16 @@ window.configure(background='white')
 # 參數、輸入選項、以及存取結果、路徑等相關變數先宣告，之後在函數中global存取
 Parameters = ['/Users/wuweihsun/Desktop/', 0.03, 0.001425, 0.28]
 Input_Word = []
-SD = pd.DataFrame()
-TR = pd.DataFrame()
-caldata = {'日期': [1], '持股單位': [1], '均價': [1], '總成本': [1],
-           '總現值': [1], '損益金額': [1], '損益比例': [1], '當天股價': [1]}
-CA = pd.DataFrame(caldata)
+global SD_Show
+global TR_Show
+global CA_Show
+SD_Show = pd.DataFrame()
+TR_Show = pd.DataFrame()
+CA_Show = pd.DataFrame()
+# caldata = {'日期': [1], '持股單位': [1], '均價': [1], '總成本': [1],
+#            '總現值': [1], '損益金額': [1], '損益比例': [1], '當天股價': [1]}
+# CA = pd.DataFrame(caldata)
+# 這個是計算進度條使用
 '------------------------------------------------------------------------'
 
 
@@ -34,11 +45,11 @@ class Fun_Tab(tk.Frame):
 
 
 class Lable_Display(tk.Label):
-    def __init__(self, Text, Frame, inputRow, inputColumn, inputSticky):
+    def __init__(self, Text, Frame, inputRow, inputColumn, inputSticky, iPadx=5, iPady=5):
         super().__init__(Frame, text=Text)
         # 定義frame中的grid
         self.grid(row=inputRow, column=inputColumn,
-                  sticky=inputSticky, ipadx=5, ipady=5)
+                  sticky=inputSticky, ipadx=iPadx, ipady=iPady)
         pass
 
 
@@ -56,10 +67,6 @@ def SaveInput():
     Input_Word = [Input_2_1.get(), Input_2_2.get(),
                   Input_2_3.get(), Input_2_4.get()]
     print(Input_Word)
-    Lable_2_5 = Lable_Display(Input_Word[0], frame_t2_2, 0, 0, 'w')
-    Lable_2_6 = Lable_Display(Input_Word[1], frame_t2_2, 1, 0, 'w')
-    Lable_2_7 = Lable_Display(Input_Word[2], frame_t2_2, 2, 0, 'w')
-    Lable_2_8 = Lable_Display(Input_Word[3], frame_t2_2, 3, 0, 'w')
     pass
 
 
@@ -91,10 +98,86 @@ def SelectPath():
 
 
 def SearchAndCalculate():
+    # 執行主程式的函數，但我們將會把這函數丟到thread中進行。
     SaveInput()
-    CAL.SearchAndCalculate(Input_Word[0], Input_Word[1], Input_Word[3],
-                           Input_Word[2], Parameters[2], Parameters[3], SD, TR, CA, Parameters[0])
+    # 若不使用global，這些存檔後的dataframe，只會留存在這函式區域內。
+    global SD_Show
+    global TR_Show
+    global CA_Show
+    [SD_Show, TR_Show, CA_Show] = CAL.SearchAndCalculate(Input_Word[0], Input_Word[1], Input_Word[3],
+                                                         Input_Word[2], Parameters[2], Parameters[3])
+
     pass
+
+
+def Show_Result(SD_Show, TR_Show, CA_Show):
+    show_title = ["期間最大損失金額為：", "出現日期為：", "期間最大損失比率：", "出現日期為：",
+                  "期間最大利益金額為：", "出現日期為：", "期間最大利益比率：", "出現日期為："]
+    show_result = [CA_Show['損益金額'].min(),
+                   CA_Show.iat[list(CA_Show['損益金額']).index(
+                       CA_Show['損益金額'].min()), 0],
+                   CA_Show["損益比例"].min(),
+                   CA_Show.iat[list(CA_Show["損益比例"]).index(
+                       CA_Show["損益比例"].min()), 0],
+                   CA_Show["損益金額"].max(),
+                   CA_Show.iat[list(CA_Show["損益金額"]).index(
+                       CA_Show["損益金額"].max()), 0],
+                   CA_Show["損益比例"].max(),
+                   CA_Show.iat[list(CA_Show["損益比例"]).index(CA_Show["損益比例"].max()), 0]]
+    # 因直接調整Dataframe格式，會將數值直接變成文字，而無法以數字方式比較，因此專門創一個dataframe來改格式之後，回傳到list。
+    CA1 = pd.DataFrame(show_result)
+    CA1 = CA1.T
+    CA1[0] = CA1[0].apply(lambda x: format(x, ','))
+    CA1[2] = CA1[2].apply(lambda x: format(x, '.2%'))
+    CA1[4] = CA1[4].apply(lambda x: format(x, ','))
+    CA1[6] = CA1[6].apply(lambda x: format(x, '.2%'))
+    show_result[0] = CA1.iat[0, 0]
+    show_result[2] = CA1.iat[0, 2]
+    show_result[4] = CA1.iat[0, 4]
+    show_result[6] = CA1.iat[0, 6]
+    # 因為CA資料不需要以數值方式比較了，直接調整格式。
+    CA_Show[u'損益比例'] = CA_Show[u'損益比例'].apply(lambda x: format(x, '.2%'))
+    CA_Show[u'持股單位'] = CA_Show[u'持股單位'].apply(lambda x: format(x, ','))
+    CA_Show[u'總成本'] = CA_Show[u'總成本'].apply(lambda x: format(x, ','))
+    CA_Show[u'總現值'] = CA_Show[u'總現值'].apply(lambda x: format(x, ','))
+    CA_Show[u'損益金額'] = CA_Show[u'損益金額'].apply(lambda x: format(x, ','))
+    CA_Show[u'均價'] = CA_Show[u'均價'].apply(lambda x: format(x, '.2f'))
+    show_lable = []
+    for i in range(0, 8):
+        show_lable.append(str('Lable_2_'+str((i+5))))
+    for i in range(0, 8):
+        show_lable[i] = Lable_Display(
+            show_title[i]+str(show_result[i]), frame_t2_2, i, 0, 'w', iPadx=0, iPady=0)
+
+    Text_2_1.insert("insert", CA_Show)
+    Text_3_1.insert("insert", TR_Show)
+    pass
+
+
+def Thread_SearchAndCalculate():
+    # 使用thread來執行主程式，這樣子進度條就可以跑。
+    thread1 = threading.Thread(target=SearchAndCalculate, args=())
+    thread1.start()
+    ProgressBar = ttk.Progressbar(
+        frame_t2_1, orient=tk.HORIZONTAL, length=180, mode='indeterminate')
+    ProgressBar.grid(row=6, column=1, columnspan=2)
+    ProgressBar.start()
+    while thread1.is_alive():
+        tab_main.update()
+        pass
+    ProgressBar.destroy()
+    Show_Result(SD_Show, TR_Show, CA_Show)
+    Click_Request_2_2 = tk.Button(
+        frame_t2_2, text="另存新檔", fg="black", command=Save_Excel, bd=0)
+    Click_Request_2_2.grid(row=9, column=0, sticky='w', pady=15)
+    pass
+
+
+def Save_Excel():
+    CAL.Save_Excel(TR_Show, CA_Show, SD_Show, Parameters[0])
+    tkinter.messagebox.showinfo("Pop up", "已儲存在："+Parameters[0])
+    pass
+
 # def Show_Result():
 #     #運算結果後，顯示在窗口
 #     Lable_2_5 = Lable_Display(Input_Word[0],frame_t2_2,0,0,'w')
@@ -113,7 +196,7 @@ tab_main.place(relx=0.02, rely=0.02, relwidth=0.96,
 
 # 寫一個所有分頁的類別，可以預設定義，並將共用函數寫在裡面
 tab_2 = Fun_Tab('定期定額投資', tab_main)
-tab_3 = Fun_Tab('交易紀錄', tab_main)
+tab_3 = Fun_Tab('交易當日股票資訊', tab_main)
 tab_4 = Fun_Tab('損益圖表', tab_main)
 tab_1 = Fun_Tab('參數設定', tab_main)
 
@@ -191,7 +274,7 @@ Input_2_4.set(10000)
 Entry_2_4 = Entry_Display(frame_t2_1, 4, 1, 'w', Input_2_4, 20, 1)
 
 Click_Request_2_1 = tk.Button(
-    frame_t2_1, text="開始查詢", fg="black", command=SearchAndCalculate)
+    frame_t2_1, text="開始查詢", fg="black", command=Thread_SearchAndCalculate, relief=GROOVE)
 Click_Request_2_1.grid(row=5, column=1, sticky='w')
 
 # 建立frame_t2_2的顯示選項
@@ -200,7 +283,7 @@ Click_Request_2_1.grid(row=5, column=1, sticky='w')
 
 # 建立frame_t2_3的顯示選項
 # 暫時設定用Text
-Text_2_1 = tk.Text(frame_t2_3, width=92, height=18)
+Text_2_1 = scrolledtext.ScrolledText(frame_t2_3, width=92, height=18)
 Text_2_1.grid(row=0, column=0)
 '------------------------------------------------------------------------'
 '------------------------------------------------------------------------'
@@ -208,7 +291,7 @@ Text_2_1.grid(row=0, column=0)
 frame_t3_1 = tk.Frame(tab_3, width=400, height=250, borderwidth=10)
 # 想讓Frame在左上方，因此我使用anchor定義方位
 frame_t3_1.pack()
-Text_3_1 = tk.Text(frame_t3_1, width=92, height=34)
+Text_3_1 = scrolledtext.ScrolledText(frame_t3_1, width=92, height=34)
 Text_3_1.grid(row=0, column=0)
 '------------------------------------------------------------------------'
 '------------------------------------------------------------------------'

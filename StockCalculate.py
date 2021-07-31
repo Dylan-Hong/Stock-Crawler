@@ -5,6 +5,8 @@ import pandas as pd
 import requests
 import datetime
 import xlsxwriter
+# pd.set_option('display.unicode.ambiguous_as_wide', True)
+pd.set_option('display.unicode.east_asian_width', True)
 
 
 # 設定一些通用函數
@@ -111,13 +113,105 @@ def GetBuyDateInfo(date, freq, SDseries, TRdataframe):
     return newdate, TRdataframe
 
 
+def Save_Excel(TR, CA, SD, path_,):
+   # 為了可以方便調欄寬等相關資訊，engine選用xlsxwriter
+    filepath = path_+'定期定額Since' + \
+        str(InitialTime)+'('+str(TargetStock)+').xlsx'
+    writer = pd.ExcelWriter(filepath, engine='xlsxwriter')
+    workbook = writer.book
+    worksheet0 = workbook.add_worksheet('投資總覽')
+    CA.to_excel(writer, sheet_name="損益變化", index=None)
+    TR.to_excel(writer, sheet_name="交易日股價資訊", index=None)
+    SD.to_excel(writer, sheet_name="區間股價資訊", index=None)
+
+    '''---------------------------------------------------------------------------------------------'''
+    # 設定excel格式
+
+    worksheet1 = writer.sheets['損益變化']
+    worksheet2 = writer.sheets['交易日股價資訊']
+    worksheet3 = writer.sheets['區間股價資訊']
+
+    format1 = workbook.add_format({'num_format': '#,##0.00'})
+    format1.set_font_name('Arial')
+    format2 = workbook.add_format({'num_format': '0.0%'})
+    format2.set_font_name('Arial')
+    format3 = workbook.add_format({'num_format': '#,##0'})
+    format3.set_font_name('Arial')
+    format4 = workbook.add_format()
+    format4.set_align('right')
+    format4.set_font_name('Arial')
+    font_format = workbook.add_format()
+    font_format_2 = workbook.add_format()
+    font_format.set_font_name('Arial')
+    font_format_2.set_font_name('Arial')
+    font_format_2.set_bold(True)
+    font_format_2.set_font_size(14)
+
+    # 第一個分頁呈現的資訊
+    worksheet0.write(1, 1, "您的這一筆投資，截至"+str(YearNow) +
+                     '/'+str(MonthNow)+'/'+str(DayNow)+"止")
+    worksheet0.write(2, 1, "持有股數共有：")
+    worksheet0.write(3, 1, "平均成本為：")
+    worksheet0.write(4, 1, "損益金額為：")
+    worksheet0.write(5, 1, "損益比率為：")
+    worksheet0.write(6, 1, "總現值為：")
+    worksheet0.write(7, 1, "期間最大損失金額為：")
+    worksheet0.write(8, 1, "出現日期為：")
+    worksheet0.write(9, 1, "期間最大損失比率：")
+    worksheet0.write(10, 1, "出現日期為：")
+    worksheet0.write(11, 1, "期間最大利益金額為：")
+    worksheet0.write(12, 1, "出現日期為：")
+    worksheet0.write(13, 1, "期間最大利益比率：")
+    worksheet0.write(14, 1, "出現日期為：")
+
+    worksheet0.write(2, 2, CA.iat[len(CA.index)-1, 1], format3)
+    worksheet0.write(3, 2, CA.iat[len(CA.index)-1, 2], format1)
+    worksheet0.write(4, 2, CA.iat[len(CA.index)-1, 5], format3)
+    worksheet0.write(5, 2, CA.iat[len(CA.index)-1, 6], format2)
+    worksheet0.write(6, 2, CA.iat[len(CA.index)-1, 4], format3)
+    worksheet0.write(7, 2, CA["損益金額"].min(), format3)
+    worksheet0.write(
+        8, 2, CA.iat[list(CA["損益金額"]).index(CA["損益金額"].min()), 0], format4)
+    worksheet0.write(9, 2, CA["損益比例"].min(), format2)
+    worksheet0.write(
+        10, 2, CA.iat[list(CA["損益比例"]).index(CA["損益比例"].min()), 0], format4)
+    worksheet0.write(11, 2, CA["損益金額"].max(), format3)
+    worksheet0.write(
+        12, 2, CA.iat[list(CA["損益金額"]).index(CA["損益金額"].max()), 0], format4)
+    worksheet0.write(13, 2, CA["損益比例"].max(), format2)
+    worksheet0.write(
+        14, 2, CA.iat[list(CA["損益比例"]).index(CA["損益比例"].max()), 0], format4)
+    worksheet0.set_column('B:B', 25, font_format_2)
+    worksheet0.set_column('C:C', 15)
+
+    worksheet1.set_column('A:A', 10, font_format)
+    worksheet1.set_column('B:B', 10, format3)
+    worksheet1.set_column('C:C', 10, format1)
+    worksheet1.set_column('G:G', 10, format2)
+    worksheet1.set_column('D:F', 10, format3)
+    worksheet1.set_column('H:H', 10, font_format)
+
+    worksheet2.set_column('A:A', 10, font_format)
+    worksheet2.set_column('B:C', 22, format3)
+    worksheet2.set_column('D:H', 10, font_format)
+    worksheet2.set_column('I:I', 12, format3)
+
+    worksheet3.set_column('A:A', 10, font_format)
+    worksheet3.set_column('B:C', 22, format3)
+    worksheet3.set_column('D:H', 10, font_format)
+    worksheet3.set_column('I:I', 12, format3)
+
+    writer.save()
+    pass
+
+
 '''---------------------------------------------------------------------------------------------'''
 
 '''---------------------------------------------------------------------------------------------'''
 # 設定輸入選項
 
 
-def SearchAndCalculate(initialtime, targetstock, payment, freq, C1, C2, sd, tr, ca, SavePath):
+def SearchAndCalculate(initialtime, targetstock, payment, freq, C1, C2):
     global TargetStock
     global InitialTime
     global Payment
@@ -173,14 +267,13 @@ def SearchAndCalculate(initialtime, targetstock, payment, freq, C1, C2, sd, tr, 
     global SD
     global TR
     global CA
-    SD = sd
+    SD = pd.DataFrame()
+    TR = pd.DataFrame()
+    caldata = {'日期': [1], '持股單位': [1], '均價': [1], '總成本': [1],
+               '總現值': [1], '損益金額': [1], '損益比例': [1], '當天股價': [1]}
+    CA = pd.DataFrame(caldata)
     # TR代表Transaction Record，為有交易日的dataframe，為從SD中擷取交易日row資訊後併入
-    TR = tr
     # CA代表Calculation，先用一個caldata建立起CA dataframe架構，但因為如果只有column沒有值，我不會把後續檔案併入，因此index 0 的值先個賦予1。
-    # caldata = {'日期': [1], '持股單位': [1], '均價': [1], '總成本': [
-    #     1], '總現值': [1], '損益金額': [1], '損益比例': [1], '當天股價': [1]}
-    # CA = pd.DataFrame(caldata)
-    CA = ca
     '''---------------------------------------------------------------------------------------------'''
     # 此迴圈，是將爬蟲資料合併為一個dataframe(SD)的過程
     for year in range(InitialYear, YearNow + 1, 1):
@@ -291,96 +384,8 @@ def SearchAndCalculate(initialtime, targetstock, payment, freq, C1, C2, sd, tr, 
         x5 = x4/x2
         CA.loc[len(CA.index)] = [SD.iat[i, 0], x1,
                                  x6, x2, x3, x4, x5, SD.iat[i, 6]]
+    print(SD)
+    print(TR)
+    print(CA)
 
-    # 思考呈現介面
-    '''---------------------------------------------------------------------------------------------'''
-    # 為了可以方便調欄寬等相關資訊，engine選用xlsxwriter
-    filepath = SavePath+'定期定額Since' + \
-        str(InitialTime)+'('+str(TargetStock)+').xlsx'
-    writer = pd.ExcelWriter(filepath, engine='xlsxwriter')
-    workbook = writer.book
-    worksheet0 = workbook.add_worksheet('投資總覽')
-    CA.to_excel(writer, sheet_name="損益變化", index=None)
-    TR.to_excel(writer, sheet_name="交易日股價資訊", index=None)
-    SD.to_excel(writer, sheet_name="區間股價資訊", index=None)
-
-    '''---------------------------------------------------------------------------------------------'''
-    # 設定excel格式
-
-    worksheet1 = writer.sheets['損益變化']
-    worksheet2 = writer.sheets['交易日股價資訊']
-    worksheet3 = writer.sheets['區間股價資訊']
-
-    format1 = workbook.add_format({'num_format': '#,##0.00'})
-    format1.set_font_name('Arial')
-    format2 = workbook.add_format({'num_format': '0.0%'})
-    format2.set_font_name('Arial')
-    format3 = workbook.add_format({'num_format': '#,##0'})
-    format3.set_font_name('Arial')
-    format4 = workbook.add_format()
-    format4.set_align('right')
-    format4.set_font_name('Arial')
-    font_format = workbook.add_format()
-    font_format_2 = workbook.add_format()
-    font_format.set_font_name('Arial')
-    font_format_2.set_font_name('Arial')
-    font_format_2.set_bold(True)
-    font_format_2.set_font_size(14)
-
-    # 第一個分頁呈現的資訊
-    worksheet0.write(1, 1, "您的這一筆投資，截至"+str(YearNow) +
-                     '/'+str(MonthNow)+'/'+str(DayNow)+"止")
-    worksheet0.write(2, 1, "持有股數共有：")
-    worksheet0.write(3, 1, "平均成本為：")
-    worksheet0.write(4, 1, "損益金額為：")
-    worksheet0.write(5, 1, "損益比率為：")
-    worksheet0.write(6, 1, "總現值為：")
-    worksheet0.write(7, 1, "期間最大損失金額為：")
-    worksheet0.write(8, 1, "出現日期為：")
-    worksheet0.write(9, 1, "期間最大損失比率：")
-    worksheet0.write(10, 1, "出現日期為：")
-    worksheet0.write(11, 1, "期間最大利益金額為：")
-    worksheet0.write(12, 1, "出現日期為：")
-    worksheet0.write(13, 1, "期間最大利益比率：")
-    worksheet0.write(14, 1, "出現日期為：")
-
-    worksheet0.write(2, 2, CA.iat[len(CA.index)-1, 1], format3)
-    worksheet0.write(3, 2, CA.iat[len(CA.index)-1, 2], format1)
-    worksheet0.write(4, 2, CA.iat[len(CA.index)-1, 5], format3)
-    worksheet0.write(5, 2, CA.iat[len(CA.index)-1, 6], format2)
-    worksheet0.write(6, 2, CA.iat[len(CA.index)-1, 4], format3)
-    worksheet0.write(7, 2, CA["損益金額"].min(), format3)
-    worksheet0.write(
-        8, 2, CA.iat[list(CA["損益金額"]).index(CA["損益金額"].min()), 0], format4)
-    worksheet0.write(9, 2, CA["損益比例"].min(), format2)
-    worksheet0.write(
-        10, 2, CA.iat[list(CA["損益比例"]).index(CA["損益比例"].min()), 0], format4)
-    worksheet0.write(11, 2, CA["損益金額"].max(), format3)
-    worksheet0.write(
-        12, 2, CA.iat[list(CA["損益金額"]).index(CA["損益金額"].max()), 0], format4)
-    worksheet0.write(13, 2, CA["損益比例"].max(), format2)
-    worksheet0.write(
-        14, 2, CA.iat[list(CA["損益比例"]).index(CA["損益比例"].max()), 0], format4)
-    worksheet0.set_column('B:B', 18, font_format_2)
-    worksheet0.set_column('C:C', 15)
-
-    worksheet1.set_column('A:A', 10, font_format)
-    worksheet1.set_column('B:B', 10, format3)
-    worksheet1.set_column('C:C', 10, format1)
-    worksheet1.set_column('G:G', 10, format2)
-    worksheet1.set_column('D:F', 10, format3)
-    worksheet1.set_column('H:H', 10, font_format)
-
-    worksheet2.set_column('A:A', 10, font_format)
-    worksheet2.set_column('B:C', 22, format3)
-    worksheet2.set_column('D:H', 10, font_format)
-    worksheet2.set_column('I:I', 12, format3)
-
-    worksheet3.set_column('A:A', 10, font_format)
-    worksheet3.set_column('B:C', 22, format3)
-    worksheet3.set_column('D:H', 10, font_format)
-    worksheet3.set_column('I:I', 12, format3)
-
-    writer.save()
-
-    return sd, tr, ca
+    return SD, TR, CA
