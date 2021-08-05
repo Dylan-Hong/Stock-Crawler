@@ -3,7 +3,7 @@ import random
 import math
 import pandas as pd
 import requests
-import GUI_Dylan as GUI
+import GUI
 import Function_def as Func
 
 """ 程式使用說明

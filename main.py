@@ -1,5 +1,5 @@
 import SystematicInvest
-import GUI_Dylan as GUI
+import GUI
 
 
 window = GUI.MainWindow( 'Stock Crawler', '900x500' )
