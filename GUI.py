@@ -140,11 +140,11 @@ class cMT_SysInvest( cTab ):
         # 設定Notebook of subtab
         self.SubNBGroup = Create_NoteBook( self, 0, 0, 850, 480 )
         # 新增subtab : 參數設定
-        self.SubTab_InputParam = cST_SubTab_InputParam( self.pMainWindow, self.SubNBGroup, '參數設定' )
+        self.SubTab_InputParam = cST_SysInvest_InputParam( self.pMainWindow, self.SubNBGroup, '參數設定' )
         # 新增subtab試算結果
-        self.SubTab_Result = cST_SubTab_Result( self.pMainWindow, self.SubNBGroup, '試算結果' )
+        self.SubTab_Result = cST_SysInvest_Result( self.pMainWindow, self.SubNBGroup, '試算結果' )
         # 新增subtab圖表輸出
-        self.SubTab_Picture = cST_SubTab_Picture( self.pMainWindow, self.SubNBGroup, '圖表輸出' )
+        self.SubTab_Picture = cST_SysInvest_Picture( self.pMainWindow, self.SubNBGroup, '圖表輸出' )
 
         self.SubNBGroup.select( self.SubTab_InputParam )
 
@@ -154,7 +154,7 @@ class cMT_Unknown( cTab ):
         label = tk.Label( self, text = '新功能放在這邊' )
         label.place( x = 10, y = 10, width = 100, height = 20 )
 
-class cST_SubTab_InputParam( cTab ):
+class cST_SysInvest_InputParam( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
 
@@ -240,7 +240,7 @@ class cST_SubTab_InputParam( cTab ):
         # 印出結果
         self.pMainWindow.Tab_SysInvest.SubTab_Result.Calc_PrintResult()
 
-class cST_SubTab_Result( cTab ):
+class cST_SysInvest_Result( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
 
@@ -311,7 +311,7 @@ class cST_SubTab_Result( cTab ):
         # 除了標題以外都清掉
         self.List_Log.delete( 1, END )
 
-class cST_SubTab_Picture( cTab ):
+class cST_SysInvest_Picture( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
 

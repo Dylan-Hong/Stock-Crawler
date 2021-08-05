@@ -20,7 +20,7 @@ import Function_def as Func
 3.第三個sheet : 過程中最大虧損金額與比例
  """
 
-def Calc( tab : GUI.cST_SubTab_InputParam ):
+def Calc( tab : GUI.cST_SysInvest_InputParam ):
     # 進度條開始動作
     tab.Progressbar.start()
     # ----------------------------------input : 讀取GUI上輸入的參數---------------------------------------
@@ -141,7 +141,7 @@ def Calc( tab : GUI.cST_SubTab_InputParam ):
             time.sleep( random.choice( DelayTimeArray ) )
         Index_log += 1
 
-def SaveFile( tab : GUI.cST_SubTab_InputParam ):
+def SaveFile( tab : GUI.cST_SysInvest_InputParam ):
     # 建立writer，設定檔案路徑
     writer = pd.ExcelWriter( tab.pMainWindow.Tab_Parameter.Path + '/' + tab.FileName + '.xlsx', engine='openpyxl' )
     # 依序寫入三個dataframe到同一個
