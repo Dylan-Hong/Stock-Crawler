@@ -9,9 +9,9 @@ import SystematicInvest
 import Function_def as Func
 import threading
 
-def Create_NoteBook( InputFrame, iRow, iColumn, iPadx, iPady ):
+def Create_NoteBook( InputFrame, iX, iY, iWid, iHei ):
     NoteBook = ttk.Notebook( InputFrame )
-    NoteBook.grid( row = iRow, column = iColumn, ipadx = iPadx, ipady = iPady )
+    NoteBook.place( x = iX, y = iY, width = iWid, height = iHei )
     return NoteBook
 
 def Create_Label( InputFrame, iText, iRow, iColumn, iSticky, iColspan ):
@@ -67,7 +67,7 @@ class MainWindow( tk.Tk ):
         self.geometry( size )
 
         # 建立主選單的notebook
-        self.MainNBGroup = Create_NoteBook( self, 0, 0, 300, 200 )
+        self.MainNBGroup = Create_NoteBook( self, 0, 0, 900, 500 )
         
         # 建立tab
         # 基本參數tab
@@ -138,7 +138,7 @@ class cMT_SysInvest( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
         super().__init__( MainWindow, NBGroup, TabName )
         # 設定Notebook of subtab
-        self.SubNBGroup = Create_NoteBook( self, 0, 0, 290, 190 )
+        self.SubNBGroup = Create_NoteBook( self, 0, 0, 850, 480 )
         # 新增subtab : 參數設定
         self.SubTab_InputParam = cST_SubTab_InputParam( self.pMainWindow, self.SubNBGroup, '參數設定' )
         # 新增subtab試算結果
@@ -277,7 +277,7 @@ class cST_SubTab_Result( cTab ):
         Create_Button( self, '輸出excel', self.ExportLog, 5, 3, 'w', 1 )
 
         # 交易紀錄ListBox
-        self.List_Log = Create_ListBox( self, 100, 6, 0, 'w', 10 )
+        self.List_Log = Create_ListBox( self, 80, 6, 0, 'w', 10 )
         # 生成的時候先寫入第一欄標題
         str = '買進日期'.ljust( 13 )
         str = str +'買進價格'.ljust( 8 )
