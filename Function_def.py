@@ -18,7 +18,7 @@ def AccumulateOneMonth( Year, Month, YearCnt, MonthCnt, EndYear, EndMonth ):
         else:
             MonthCnt += 1
     else:
-        if Month == 12:
+        if Month == 10:
             MonthCnt -= 11
             YearCnt += 1
         else:
