@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 import tkinter as tk
 from tkinter import ttk, filedialog
 import SystematicInvest
+import Swing
 import Function_def as Func
 import threading
 
@@ -75,6 +76,9 @@ class MainWindow( tk.Tk ):
 
         # 定期定額tab
         self.Tab_SysInvest = cMT_SysInvest( self, self.MainNBGroup, '定期定額' )
+
+        # 波段操做tab
+        self.Tab_Swing = cMT_Swing( self, self.MainNBGroup, '波段操作' )
 
         # 建立新功能的tab
         self.Tab_Unknow = cMT_Unknown( self, self.MainNBGroup, '新功能' )
@@ -147,6 +151,57 @@ class cMT_SysInvest( cTab ):
         self.SubTab_Picture = cST_SysInvest_Picture( self.pMainWindow, self.SubNBGroup, '圖表輸出' )
 
         self.SubNBGroup.select( self.SubTab_InputParam )
+
+class cMT_Swing( cTab ):
+    def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
+        super().__init__( MainWindow, NBGroup, TabName )
+        # 起始日期 label
+        Create_Label( self, '起始日期 : ', 0, 0, 'w', 1 )
+        # 起始日期 年Combobox
+        self.Combobox_StartYear = Create_Combobox( self, Func.GetYearArrayStr(), 0, 1, 'w', 1 )
+        self.Combobox_StartYear.current( 70 )
+        # 起始日期 年label
+        Create_Label( self, '年', 0, 2, 'w', 1 )
+        # 起始日期 月Combobox
+        self.Combobox_StartMonth = Create_Combobox( self, Func.GetMonthArrayStr(), 0, 3, 'w', 1 )
+        self.Combobox_StartMonth.current( 0 )
+        # 起始日期 月label
+        Create_Label( self, '月', 0, 4, 'w', 1 )
+        # 起始日期 日Combobox
+        self.Combobox_StartDay = Create_Combobox( self, Func.GetDayArrayStr(), 0, 5, 'w', 1 )
+        self.Combobox_StartDay.current( 0 )
+        # 起始日期 日label
+        Create_Label( self, '日', 0, 6, 'w', 1 )
+
+        # 結束日期label
+        Create_Label( self, '結束日期 : ', 1, 0, 'w', 1 )
+        # 結束日期 年Combobox
+        self.Combobox_EndYear = Create_Combobox( self, Func.GetYearArrayStr(), 1, 1, 'w', 1 )
+        self.Combobox_EndYear.current( 70 )
+        # 結束日期 年label
+        Create_Label( self, '年', 1, 2, 'w', 1 )
+        # 結束日期 月Combobox
+        self.Combobox_EndMonth = Create_Combobox( self, Func.GetMonthArrayStr(), 1, 3, 'w', 1 )
+        self.Combobox_EndMonth.current( 0 )
+        # 結束日期 月label
+        Create_Label( self, '月', 1, 4, 'w', 1 )
+        # 結束日期 日Combobox
+        self.Combobox_EndDay = Create_Combobox( self, Func.GetDayArrayStr(), 1, 5, 'w', 1 )
+        self.Combobox_EndDay.current( 0 )
+        # 結束日期 日label
+        Create_Label( self, '日', 1, 6, 'w', 1 )
+
+        # 股票號碼label
+        Create_Label( self, '股票號碼 : ', 2, 0, 'w', 1 )
+        # 股票號碼entry
+        self.entry_StockNum = Create_Entry( self, 2, 1, 'w', 1 )
+        self.entry_StockNum.insert( 0, '2330' )
+
+        # 開始計算button
+        self.Button_StartCalc = Create_Button( self, '開始計算', self.Calc_Swing, 3, 5, 'w', 1 )
+
+    def Calc_Swing( self ):
+        Swing.Calculation()
 
 class cMT_Unknown( cTab ):
     def __init__( self, MainWindow : MainWindow,  NBGroup : ttk.Notebook, TabName ):
