@@ -9,21 +9,6 @@ import re
 import requests
 import twstock
 
-"""
-Todo
-.漲停、跌停無法買進
-.買進後隔天上漲但未站上五日線，會出場
-.log的日期格子寬度
-.抓平均震盪比例，才能判斷長紅Ｋ
-.分批買進、分批賣出
-.出場規則改為紅Ｋ底部
-
-Done
-1.掃過所有股票
-2.站上or跌破只有一天，不列入高低點
-
-"""
-
 class cEnumRow():
     def __init__(self) -> None:
         self.Open = i = 0
@@ -47,11 +32,12 @@ def Calculation():
     writer = pd.ExcelWriter( '0905.xlsx', engine='openpyxl' )
     # 讀取所有上市股票的代號與名稱
     [ StockNumList, StockNameList ] = GetStcokList()
-    df_profit = pd.DataFrame( columns = [ '股票代號', '股票名稱', '總損益' ] )
+    df_profit = pd.DataFrame( columns = [ '股票代號', '股票名稱', '總損益', '總損益f' ] )
 
     # 搜尋所有股票
-    for StockIndex in range( 0, 1 ):
+    for StockIndex in range( 0, len( StockNumList ) ):
         # 設定標的
+        print( "StockIndex = ", StockIndex )
         TargetStockNo = StockNumList[ StockIndex ]
         TargetStockName = StockNameList[ StockIndex ]
         # ----------------------------------input : 讀取GUI上輸入的參數---------------------------------------
@@ -113,18 +99,18 @@ def Calculation():
         # 逐日計算
         for i in range( 0, len( df_data.index ) ):
             # 讀取當天價格資訊
-            PriceInfo = cPriceInfo( df_data, i )
+            PriceInfo = cPriceInfo( df_data, i, 1 )
             # 更新當天趨勢
             TrendInfo.UpdateTrend( PriceInfo )
             # 輸出資料至dataframe
             PrintToDf( df_data, TrendInfo, i, PriceInfo )
             # 執行買進賣出
-            BuySell( PriceInfo, TrendInfo, InvestInfo )
+            InvestInfo.BuySell( PriceInfo, TrendInfo )
 
         # 單隻股票結束後輸出結果
-        print( PriceInfo.date )
-        df_profit.loc[ len( df_profit ) ] = [ TargetStockNo, TargetStockName, '{:.2%}'.format( \
-            ( InvestInfo.Cash + InvestInfo.CostAmount ) / InvestInfo.OriginCash - 1 ) ]
+        df_profit.loc[ len( df_profit ) ] = [ TargetStockNo, TargetStockName, \
+            '{:.2%}'.format( ( InvestInfo.Cash + InvestInfo.CostAmount ) / InvestInfo.OriginCash - 1 ), \
+            ( InvestInfo.Cash + InvestInfo.CostAmount ) / InvestInfo.OriginCash - 1  ]
         # todo : 這邊可以放判斷當天進出
         # print( TargetStockNo + ' : ' + GetRealtimeData( TargetStockNo, 'Buy' ) )
 
@@ -137,7 +123,7 @@ def Calculation():
     writer.save()
 
 class cPriceInfo():
-    def __init__( self, df : pd.DataFrame, index ) -> None:
+    def __init__( self, df : pd.DataFrame, index, GetLast ) -> None:
         self.MA20_value = df[ 'MA_20' ][ index ]
         self.MA5_value = df[ 'MA_5' ][ index ]
         self.Close = df[ 'Close' ][ index ]
@@ -145,6 +131,10 @@ class cPriceInfo():
         self.High = df[ 'High' ][ index ]
         self.Low = df[ 'Low' ][ index ]
         self.date = df.index[ index ]
+        if GetLast == 1 and index != 0:
+            self.LPriceInfo = cPriceInfo( df, index - 1, 0 )
+        if GetLast == 1 and index != 0 and index != 1:
+            self.LLPriceInfo = cPriceInfo( df, index - 2, 0 )
 
 class cTrendInfo():
     def __init__( self ) -> None:
@@ -187,22 +177,16 @@ class cTrendInfo():
             self.Trend = 'Bear'
         else:
             self.Trend = 'Con'
-        print( PriceInfo.date, "  ", self.Trend )
-        print( "LL = ", self.LastLow, "CL = ", self.Low, "NL = ", self.NewLow )
-        print( "LH = ", self.LastHigh, "CH = ", self.High, "NH = ", self.NewHigh )
+        # print( PriceInfo.date, "  ", self.Trend )
+        # print( "LL = ", self.LastLow, "CL = ", self.Low, "NL = ", self.NewLow )
+        # print( "LH = ", self.LastHigh, "CH = ", self.High, "NH = ", self.NewHigh )
 
     # 更新高低點
     def UpdateHighAndLow( self, PriceInfo : cPriceInfo ):
-        # 情境
-        # 1.尚未切換過五日線，直接不判斷
-        # 2.尚無確認的高點與低點
-        # 3.尚無確認的前高與前低
-        # 4.前高前低，確認高確認低都有
-        # 特殊情況需處理
-        # 1.站上五日線當天又創低點 ： 會更新到
-        # 2.站上五日線當天又創低點，且跌破前低造成底底低 ： 會更新到
-        # 3.站上隔天馬上跌破 ： 考慮新增一個維持天數
-        # 4.只跌破一點點 ： 考慮在判斷IsOver5MA的時候擋掉
+        """
+        1.前兩天不判斷
+        2.
+        """
 
         # 尚未切換兩次五日線
         if len( self.QueIsOver5MA ) < 3:
@@ -256,6 +240,16 @@ class cTrendInfo():
             self.Low = self.NewLow
             self.NewLow = np.nan
         """
+        # 情境
+        # 1.尚未切換過五日線，直接不判斷
+        # 2.尚無確認的高點與低點
+        # 3.尚無確認的前高與前低
+        # 4.前高前低，確認高確認低都有
+        # 特殊情況需處理
+        # 1.站上五日線當天又創低點 ： 會更新到
+        # 2.站上五日線當天又創低點，且跌破前低造成底底低 ： 會更新到
+        # 3.站上隔天馬上跌破 ： 考慮新增一個維持天數
+        # 4.只跌破一點點 ： 考慮在判斷IsOver5MA的時候擋掉
         # 尚未切換過五日線
         if self.LastIsOver5MA == 'Nan':
             self.Keep5MADay = 0
@@ -349,15 +343,24 @@ class cInventoryInfo():
         self.CostAmount = 0
         # 是否持股狀態變數
         self.HoldFlag = 0
+        # 停損價位
+        self.StopLoss = np.nan
+        # 漲跌停flag
+        self.LimitUp = 0
+        self.ForceBuy = 0
+        self.ForceSell = 0
+        
 
         # 輸出紀錄
-        self.df_InventLog = pd.DataFrame( columns = [ '買進日期', '買進價格', '賣出日期', '賣出價格', '單筆淨利', '單筆比例' , '累積損益', '累積比例' ] )
+        self.df_InventLog = pd.DataFrame( columns = [ '買進日期', '買進價格', '賣出日期', '賣出價格', '單筆淨利', '單筆比例' , '累積損益', '累積比例', '買進方法', '賣出方法', '停損價' ] )
         # 買進日期
         self.BuyDate = 0
 
         # 交易資訊
         self.TaxRate = TaxRate
         self.FeeRate = FeeRate
+
+        self.BuyMethod = ''
     
     def ClearInfo( self ):
         self.UnitCost = 0
@@ -366,11 +369,12 @@ class cInventoryInfo():
         self.CostAmount = 0
         self.HoldFlag = 0
 
-    def BuyStock( self, PriceInfo : cPriceInfo ):
-        # 買進價格為收盤價
-        self.BuyPrice = PriceInfo.Close
+    def BuyStock( self, PriceInfo : cPriceInfo, BuyPrice, method ):
+        self.BuyMethod = method
+        # 紀錄買進價格
+        self.BuyPrice = BuyPrice
         # 歐印買進，收盤價 * 數量 ＊ ( 1 + 0.001425 ) = 金額，計算可買價格、買進金額
-        self.Quantity = math.floor( self.Cash / PriceInfo.Close / ( 1 + self.FeeRate ) )
+        self.Quantity = math.floor( self.Cash / BuyPrice / ( 1 + self.FeeRate ) )
         self.CostAmount = math.ceil( self.BuyPrice * self.Quantity * ( 1 + self.FeeRate ) )
         # 計算剩餘現金
         self.Cash -= self.CostAmount
@@ -378,42 +382,89 @@ class cInventoryInfo():
         self.UnitCost = self.CostAmount / self.Quantity / ( 1 - self.FeeRate - self.TaxRate )
         # 持股狀態on
         self.HoldFlag = 1
+        # 設定停損
+        self.StopLoss = PriceInfo.Open
+
         self.BuyDate = PriceInfo.date
 
-    def SellStock( self, PriceInfo : cPriceInfo ):
+    def SellStock( self, PriceInfo : cPriceInfo, SellPrice, method ):
         # print( 'Buy  : ', PriceInfo.date, '{:.2f}'.format( PriceInfo.Close ), 'Quantity = ', self.Quantity, 'Cash = ', self.Cash )
-        FeeAmount = PriceInfo.Close * self.Quantity * self.FeeRate
-        TaxAmount = PriceInfo.Close * self.Quantity * self.TaxRate
-        SellAmount = math.ceil( PriceInfo.Close * self.Quantity - FeeAmount - TaxAmount )
+        FeeAmount = SellPrice * self.Quantity * self.FeeRate
+        TaxAmount = SellPrice * self.Quantity * self.TaxRate
+        SellAmount = math.ceil( SellPrice * self.Quantity - FeeAmount - TaxAmount )
         self.NetIncome += SellAmount - self.CostAmount
         self.Cash += SellAmount
-        self.df_InventLog.loc[ len(self.df_InventLog) ] = [ self.BuyDate, self.BuyPrice, PriceInfo.date, PriceInfo.Close, \
+        self.df_InventLog.loc[ len(self.df_InventLog) ] = [ self.BuyDate, self.BuyPrice, PriceInfo.date, SellPrice, \
             SellAmount - self.CostAmount, '{:.2%}'.format( ( SellAmount - self.CostAmount ) / self.CostAmount ), \
-            self.NetIncome, '{:.2%}'.format( self.NetIncome / self.OriginCash ) ]
+            self.NetIncome, '{:.2%}'.format( self.NetIncome / self.OriginCash ), self.BuyMethod, method, self.StopLoss ]
         # print( 'Sell : ', PriceInfo.date, '{:.2f}'.format( PriceInfo.Close ), 'Quantity = ', self.Quantity, 'Cash = ', self.Cash )
         # print( '單筆淨利 = ', SellAmount - self.CostAmount, '   ;百分比 = ', '{:.2f}'.format( ( SellAmount - self.CostAmount ) / self.CostAmount * 100 ) )
         # print( '累積損益 = ', self.NetIncome )
         self.ClearInfo()
 
+    def BuySell( self, PriceInfo : cPriceInfo, TrendInfo : cTrendInfo ):
+        # 若無持股，判斷是否買進
+        if self.HoldFlag == 0:
+            # print( PriceInfo.date, ':', ( PriceInfo.Close - PriceInfo.Open ) / PriceInfo.Close * 100 )
+            """買進條件
+            1.多頭
+            2.紅Ｋ，比例待處理
+            3.非漲停，目前先用9.4%計算，若漲停則不追，直到下跌後才重新評估
+            """
+            # 若前一天為買點但漲停，隔天掛平盤價買
+            if self.ForceBuy == 1:
+                if PriceInfo.Low < PriceInfo.LPriceInfo.Close:
+                    self.BuyStock( PriceInfo, PriceInfo.LPriceInfo.Close, 'Force' )
+                    self.LimitUp = 0
+                self.ForceBuy = 0
+                return
+            # 若漲停後不追，直到跌破前一天低點再重新評估
+            if self.LimitUp == 1 and PriceInfo.Low < PriceInfo.LPriceInfo.Low:
+                self.LimitUp = 0
+            # 買進判斷
+            if  TrendInfo.Trend == 'Bull' \
+                    and \
+                PriceInfo.Close > PriceInfo.Open \
+                    and \
+                self.LimitUp == 0 \
+                    and \
+                PriceInfo.Close > PriceInfo.LPriceInfo.High \
+                :
+                # 鎖漲停當天無法買
+                if PriceInfo.Close / PriceInfo.LPriceInfo.Close > 1.094:
+                    # on flag隔天平盤買or確保那一波不追高等到下次拉回再清掉
+                    self.LimitUp = 1
+                    self.ForceBuy = 1
+                # 非漲停才能買進
+                else:
+                    self.BuyStock( PriceInfo, PriceInfo.Close, 'Normal' )
+
+        # 若有持股，判斷是否賣出
+        elif self.HoldFlag == 1:
+            """買進條件
+            1.跌破停損價
+            2.有賺錢的情況下，跌破五日線；考慮改成有上漲過
+            3.若賣出當天為跌停，隔天掛跌停賣出
+            """
+            if self.ForceSell == 1:
+                if PriceInfo.High > PriceInfo.LPriceInfo.Close * 0.92:
+                    self.SellStock( PriceInfo, PriceInfo.Open, 'Force' )
+                    self.ForceSell = 0
+                    return
+            # 賣出判斷
+            if  PriceInfo.Close < self.StopLoss or \
+                ( PriceInfo.Close > self.BuyPrice and PriceInfo.Close < PriceInfo.MA5_value and PriceInfo.Close < PriceInfo.LPriceInfo.Close ):
+                # 若跌破停損＋跌停，直接強制賣出
+                if PriceInfo.Close / PriceInfo.LPriceInfo.Close < 0.92:
+                    self.ForceSell = 1
+                # 收盤非跌停才可以賣出
+                else:
+                    self.SellStock( PriceInfo, PriceInfo.Close, 'Normal' )
+
 def PrintToDf( df : pd.DataFrame, TrendInfo : cTrendInfo, index, PriceInfo : cPriceInfo ):
-    # Todo : 這邊寫數值到df需要一個enum比較好
     df.iloc[ index, eRow.IsOver5MA ] = TrendInfo.IsOver5MA
     df.iloc[ index, eRow.Trend ] = TrendInfo.Trend
     df.iloc[ index, eRow.debugTime ] = PriceInfo.date
-
-def BuySell( PriceInfo : cPriceInfo, TrendInfo : cTrendInfo, InvestInfo : cInventoryInfo ):
-    # 多頭趨勢判斷是否為買點
-    # 若無持股，判斷是否買進
-    if InvestInfo.HoldFlag == 0:
-        # print( PriceInfo.date, ':', ( PriceInfo.Close - PriceInfo.Open ) / PriceInfo.Close * 100 )
-        # 收盤價站上五日線買進
-        if TrendInfo.Trend == 'Bull' and PriceInfo.Close > PriceInfo.Open:
-            InvestInfo.BuyStock( PriceInfo )
-    # 若有持股，判斷是否賣出
-    elif InvestInfo.HoldFlag == 1:
-        # 收盤價跌破五日線賣出
-        if PriceInfo.Close < PriceInfo.MA5_value:
-            InvestInfo.SellStock( PriceInfo )
 
 def GetStcokList():
     res = requests.get("http://isin.twse.com.tw/isin/C_public.jsp?strMode=2")
