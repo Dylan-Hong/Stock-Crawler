@@ -36,3 +36,9 @@ def GetMonthArrayStr():
     for i in range( 1, 13 ):
         MonthArr.append( i )
     return MonthArr
+
+def GetDayArrayStr():
+    DayArr = []
+    for i in range( 1, 32 ):
+        DayArr.append( i )
+    return DayArr
